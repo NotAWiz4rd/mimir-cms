@@ -1,0 +1,96 @@
+/* heebo-regular - latin */
+@font-face {
+    font-family: 'Heebo';
+    font-style: normal;
+    font-weight: 400;
+    font-color: #000000;
+    src: url('../fonts/heebo-v4-latin-regular.eot'); /* IE9 Compat Modes */
+    src: local('Heebo'), local('Heebo-Regular'),
+    url('../fonts/heebo-v4-latin-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */ url('../fonts/heebo-v4-latin-regular.woff2') format('woff2'), /* Super Modern Browsers */ url('../fonts/heebo-v4-latin-regular.woff') format('woff'), /* Modern Browsers */ url('../fonts/heebo-v4-latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */ url('../fonts/heebo-v4-latin-regular.svg#Heebo') format('svg'); /* Legacy iOS */
+}
+
+body {
+    background-color: darkgrey;
+    margin: 0;
+    padding: 0;
+    font-family: 'Heebo';
+}
+
+#pathContainer {
+    margin: 0;
+    margin-left: 5%;
+    width: 100%;
+    position: relative;
+}
+
+#pathContainer p {
+    font-size: 26px;
+    color: azure;
+    text-shadow: 2px 2px 2px #000000;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 20%;
+    height: 100%;
+    position: fixed;
+    overflow: auto;
+    order: 0;
+    background-color: dimgray;
+    display: flex;
+    flex-direction: column;
+    transition: all .5s ease-in-out;
+}
+
+nav li a {
+    display: block;
+    padding: 10px 16px;
+    color: lightgray;
+    text-decoration: none;
+    text-align: left;
+}
+
+nav li a:hover {
+    background-color: #aeeeee;
+    color: black;
+}
+
+nav li a:active {
+    background-color: #96cdcd;
+    color: black;
+}
+
+.actionSubmit {
+    border-radius: 5px;
+    -webkit-transition-duration: 0.4s;
+    transition-duration: 0.4s;
+    border: 0px;
+    background-color: #4CAF50;
+    color: white;
+}
+
+.actionSubmit:hover {
+    background-color: rgb(72, 158, 75);
+    color: white;
+}
+
+.action {
+    padding: 10px 16px;
+    background-color: #333;
+}
+
+.action form label {
+    color: lightgray;
+}
+
+a.disabled {
+    cursor: default;
+    pointer-events: none;
+    color: #333;
+}
+
+a.enabled {
+    cursor: pointer;
+}

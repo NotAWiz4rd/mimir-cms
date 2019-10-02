@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="de" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Mimir - '+${artifact.getDisplayName()}">Mimir</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/general.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/preview.css}">
+    <link rel="icon" type="image/png" th:href="@{/favicon.png}">
+</head>
+<body>
+<nav>
+    <ul id="leftMenu">
+        <li><a th:href="@{__${applicationBaseUrl}__/}">Home</a></li>
+        <li><a th:href="@{/anleitung.pdf}">Hilfe</a></li>
+        <li>
+            <form th:action="@{/logout}" method="post">
+                <a class=enabled onclick="this.parentNode.submit()"><span th:text="${currentUser}"></span> abmelden</a>
+            </form>
+        </li>
+    </ul>
+</nav>
+<!-- The layout of the preview page used to not collide with the navbar on the left side -->
+<div id="layoutForPreviewPage">
+    <!-- The container that handles the order of the containing divs -->
+    <div id="previewContainer">
+        <!-- handles the content of the left half of the container which in this case is the preview content -->
+        <div id="leftHalfContainer">
+            <div id="pathContainer">
+                <p><a style="text-decoration: none" th:href="@{__${applicationBaseUrl}____${parentUrl}__}">←</a></p>
+                <p th:text="${currentUrl}"></p>
+            </div>
+            <div id="artifactPreviewContainer">
+                <iframe th:src="@{__${applicationBaseUrl}____${currentUrl}__}" align="middle">
+                </iframe>
+            </div>
+        </div>
+        <!-- handles the content of the right half of the container which in this case is the meta data for the preview content -->
+        <div id="rightHalfContainer">
+            <nav>
+                <ul id="rightMenu">
+                    <li>
+                        <div class=artifactDataOrActionContainer>
+                            <p class=artifactDataKey>Titel</p>
+                            <p class=artifactDataValue th:text="${artifact.getDisplayName()}">Beispieldatei</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class=artifactDataOrActionContainer>
+                            <p class=artifactDataKey>Autor</p>
+                            <p class=artifactDataValue th:text="${artifact.getAuthor()}">Max Mustermann</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class=artifactDataOrActionContainer>
+                            <p class=artifactDataKey>Dateigröße</p>
+                            <p class=artifactDataValue th:text="${fileSize}">7 MB</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class=artifactDataOrActionContainer>
+                            <p class=artifactDataKey>Dateittyp</p>
+                            <p class=artifactDataValue th:text="${artifact.getContentType()}">image/jpeg</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class=artifactDataOrActionContainer>
+                            <p class=artifactDataKey>Änderungsdatum</p>
+                            <p id="artifactDataLastChange" class=artifactDataValue>30/05/2019, 12:51:12</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class=artifactDataOrActionContainer>
+                            <p class=artifactDataKey>Status</p>
+                            <p class=artifactDataValue th:text="${artifact.isLocked()?'gesperrt':'nicht gesperrt'}">nicht gesperrt</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class=artifactDataOrActionContainer th:if="${artifact.isLocked()}">
+                            <p class=artifactDataKey>Gesperrt von</p>
+                            <p class=artifactDataValue th:text="${artifact.getLockedByName()}"></p>
+                        </div>
+                    </li>
+                    <li>
+                        <a id="artifactrawviewlink" class=enabled th:href="@{__${applicationBaseUrl}____${currentUrl}__}">Artefakt ansehen (RAW)</a>
+                    </li>
+                    <li>
+                        <a id="artifactrecheckinlink" th:class="${!isLockedByCurrentUser?'disabled':'enabled'}">Artefakt neu einchecken</a>
+                    </li>
+                    <li>
+                        <div id="artifactReCheckinContainer" class="artifactDataOrActionContainer action" style="display: none">
+                            <form th:action="@{/artifact/__${artifact.getId()}__/file}" th:method="put" enctype="multipart/form-data">
+                                <label>Wähle eine Datei aus:</label>
+                                <input name="newFile" type="file" size="50" accept="*">
+                                <input class="actionSubmit" type="submit" value="Bestätigen"/>
+                            </form>
+                        </div>
+                    </li>
+                    <li>
+                        <a id="artifactdownloadlink" class=enabled th:href="@{__${applicationBaseUrl}____${currentUrl}__?download}">Artefakt herunterladen</a>
+                    </li>
+                    <li>
+                        <a id="artifactcheckoutlink" th:class="${artifact.isLocked()?'disabled':'enabled'}">Artefakt auschecken</a>
+                    </li>
+                    <li>
+                        <div id="artifactCheckoutContainer" class="artifactDataOrActionContainer action" style="display: none">
+                            <form th:action="@{/artifact/__${artifact.getId()}__/checkout}" th:method="put">
+                                <input class="actionSubmit" type="submit" value="Bestätigen"
+                                       onclick="setTimeout(function() {location.reload()}, 2000);"/>
+                            </form>
+                        </div>
+                    </li>
+                    <li>
+                        <a id="artifactRenameLink" th:class="${artifact.isLocked()?'disabled':'enabled'}">Artefakt umbenennen</a>
+                    </li>
+                    <li>
+                        <div id="artifactRenameContainer" class="artifactDataOrActionContainer action" style="display: none">
+                            <form th:action="@{/artifact/__${artifact.getId()}__/name}" th:method="put">
+                                <label>Neuer Name:</label>
+                                <input name="newName" type="text"/>
+                                <input class="actionSubmit" type="submit" value="Bestätigen"/>
+                            </form>
+                        </div>
+                    </li>
+                    <li>
+                        <a id="artifactDeleteLink" th:class="${artifact.isLocked()?'disabled':'enabled'}">Artefakt löschen</a>
+                    </li>
+                    <li>
+                        <div id="artifactDeleteContainer" class="artifactDataOrActionContainer action" style="display: none">
+                            <form th:action="@{/artifact/__${artifact.getId()}__}" th:method="delete">
+                                <input class="actionSubmit" type="submit" value="Bestätigen"/>
+                            </form>
+                        </div>
+                    </li>
+                    <li>
+                        <a id="artifactUnlockLink" class=enabled th:if="${isUserAdmin and artifact.isLocked()}">Artefakt entsperren</a>
+                    </li>
+                    <li>
+                        <div id="artifactUnlockContainer" class="artifactDataOrActionContainer action" style="display: none">
+                            <form th:action="@{/artifact/__${artifact.getId()}__/unlock}" th:method="put">
+                                <input class="actionSubmit" type="submit" value="Bestätigen"/>
+                            </form>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/hideandshowactions.js}" type="text/javascript"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    var artifactLastChange = /*[[${artifact.getLastChange().toEpochMilli()}]]*/ 0;
+
+    /*]]>*/
+    registerShowActionOnClick("artifactRenameLink", "artifactRenameContainer");
+    registerShowActionOnClick("artifactDeleteLink","artifactDeleteContainer");
+    registerShowActionOnClick("artifactrecheckinlink","artifactReCheckinContainer");
+    registerShowActionOnClick("artifactcheckoutlink","artifactCheckoutContainer");
+    registerShowActionOnClick("artifactUnlockLink","artifactUnlockContainer");
+    let artifactLastChangeObject = new Date(parseInt(artifactLastChange, 10));
+    document.getElementById("artifactDataLastChange").innerText = artifactLastChangeObject.toLocaleString();
+</script>
+</body>
+</html>

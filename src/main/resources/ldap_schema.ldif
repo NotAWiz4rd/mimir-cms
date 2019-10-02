@@ -1,0 +1,145 @@
+dn: cn=admin,dc=seprojekt,dc=de
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+cn: admin
+description: LDAP administrator
+structuralObjectClass: organizationalRole
+entryUUID: dec89578-e03b-1038-83b5-190b61f3b919
+creatorsName: cn=admin,dc=seprojekt,dc=de
+createTimestamp: 20190321154351Z
+userPassword:: e1NTSEF9SWhibFFURlZLaVB0bXo2QUo1dmZXUDNveWUwNk5vZnY=
+modifiersName: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+modifyTimestamp: 20190409105926Z
+
+dn: ou=users,dc=seprojekt,dc=de
+ou: users
+objectClass: organizationalUnit
+objectClass: top
+structuralObjectClass: organizationalUnit
+entryUUID: 9d9a1c9e-e350-1038-8524-1953cb4dd1da
+creatorsName: cn=admin,dc=seprojekt,dc=de
+createTimestamp: 20190325134955Z
+modifiersName: cn=admin,dc=seprojekt,dc=de
+modifyTimestamp: 20190325134955Z
+
+dn: ou=groups,ou=users,dc=seprojekt,dc=de
+ou: groups
+objectClass: organizationalUnit
+objectClass: top
+structuralObjectClass: organizationalUnit
+entryUUID: 31ceebf0-e352-1038-852b-1953cb4dd1da
+creatorsName: cn=admin,dc=seprojekt,dc=de
+createTimestamp: 20190325140113Z
+modifiersName: cn=admin,dc=seprojekt,dc=de
+modifyTimestamp: 20190325140113Z
+
+dn: ou=accounts,ou=users,dc=seprojekt,dc=de
+ou: accounts
+objectClass: organizationalUnit
+objectClass: top
+structuralObjectClass: organizationalUnit
+entryUUID: 3a9379a4-e352-1038-852d-1953cb4dd1da
+creatorsName: cn=admin,dc=seprojekt,dc=de
+createTimestamp: 20190325140128Z
+modifiersName: cn=admin,dc=seprojekt,dc=de
+modifyTimestamp: 20190325140128Z
+
+dn: uid=jbark,ou=accounts,ou=users,dc=seprojekt,dc=de
+uid: jbark
+mail: jo.bark@ostfalia.de
+givenName: Joshua
+cn: Joshua Bark
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+userPassword:: e1NTSEF9dmpzbXpkcHhPYzVLT1BRdjlNN015ZVJ1b2hVeGRnK29FeFlXZ3c9P
+ Q==
+structuralObjectClass: inetOrgPerson
+entryUUID: 4607ab3e-e352-1038-852e-1953cb4dd1da
+creatorsName: cn=admin,dc=seprojekt,dc=de
+createTimestamp: 20190325140147Z
+sn: Bark
+modifiersName: uid=jbark,ou=accounts,ou=users,dc=seprojekt,dc=de
+modifyTimestamp: 20190326092428Z
+
+dn: uid=thellmann,ou=accounts,ou=users,dc=seprojekt,dc=de
+uid: thellmann
+mail: t.hellmann@ostfalia.de
+givenName: Tobias
+sn: Hellmann
+cn: Tobias Hellmann
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+userPassword:: e1NTSEF9c1BUQ28yR2FKVk9sUlNiM3BhSi9nN2JkSkVKaWNrQmY5Wmx0d2c9P
+ Q==
+structuralObjectClass: inetOrgPerson
+entryUUID: 4a7292a6-e352-1038-852f-1953cb4dd1da
+creatorsName: cn=admin,dc=seprojekt,dc=de
+createTimestamp: 20190325140154Z
+modifyTimestamp: 20190325140154Z
+modifiersName: cn=admin,dc=seprojekt,dc=de
+
+dn: cn=cms-admins,ou=groups,ou=users,dc=seprojekt,dc=de
+cn: cms-admins
+objectClass: groupOfNames
+objectClass: top
+structuralObjectClass: groupOfNames
+entryUUID: b6a17536-e353-1038-8530-1953cb4dd1da
+creatorsName: cn=admin,dc=seprojekt,dc=de
+createTimestamp: 20190325141205Z
+member: uid=thellmann,ou=accounts,ou=users,dc=seprojekt,dc=de
+modifiersName: cn=admin,dc=seprojekt,dc=de
+modifyTimestamp: 20190325142509Z
+
+dn: cn=cms-users,ou=groups,ou=users,dc=seprojekt,dc=de
+cn: cms-users
+objectClass: groupOfNames
+objectClass: top
+structuralObjectClass: groupOfNames
+entryUUID: b6a2bc20-e353-1038-8531-1953cb4dd1da
+creatorsName: cn=admin,dc=seprojekt,dc=de
+createTimestamp: 20190325141205Z
+member: uid=jbark,ou=accounts,ou=users,dc=seprojekt,dc=de
+modifiersName: cn=admin,dc=seprojekt,dc=de
+modifyTimestamp: 20190325142443Z
+
+dn: cn=ldap-admins,ou=groups,ou=users,dc=seprojekt,dc=de
+cn: ldap-admins
+objectClass: groupOfNames
+objectClass: top
+structuralObjectClass: groupOfNames
+entryUUID: b6a3febe-e353-1038-8532-1953cb4dd1da
+creatorsName: cn=admin,dc=seprojekt,dc=de
+createTimestamp: 20190325141205Z
+member: uid=jbark,ou=accounts,ou=users,dc=seprojekt,dc=de
+modifiersName: cn=admin,dc=seprojekt,dc=de
+modifyTimestamp: 20190325142533Z
+
+dn: ou=service-users,dc=seprojekt,dc=de
+ou: service-users
+objectClass: organizationalUnit
+objectClass: top
+structuralObjectClass: organizationalUnit
+entryUUID: 5ce4dbc4-e3ed-1038-80a8-8f19c432541c
+creatorsName: cn=admin,dc=seprojekt,dc=de
+createTimestamp: 20190326083157Z
+modifiersName: cn=admin,dc=seprojekt,dc=de
+modifyTimestamp: 20190326083157Z
+
+dn: uid=cms,ou=service-users,dc=seprojekt,dc=de
+uid: cms
+objectClass: account
+objectClass: top
+objectClass: simpleSecurityObject
+userPassword:: e1NTSEF9UEhXK3BJN0tzbmdzaW5tanNxV2VpMUZSZ1E4L1JRQXdJeVhNU3c9P
+ Q==
+structuralObjectClass: account
+entryUUID: ab8c2dae-e3ed-1038-80a9-8f19c432541c
+creatorsName: cn=admin,dc=seprojekt,dc=de
+createTimestamp: 20190326083409Z
+modifiersName: cn=admin,dc=seprojekt,dc=de
+modifyTimestamp: 20190326083409Z
+

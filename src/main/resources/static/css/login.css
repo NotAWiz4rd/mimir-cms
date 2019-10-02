@@ -1,0 +1,74 @@
+body {
+    margin: 10px auto;
+
+    /* fallback for old browsers */
+    background: #0F2027;
+    /* Chrome 10-25, Safari 5.1-6 */
+    background: -webkit-linear-gradient(to right, #2C5364, #203A43, #0F2027);
+    /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: linear-gradient(to right, #2C5364, #203A43, #0F2027);
+}
+
+* {
+    padding: 10px;
+    margin: 5px;
+}
+
+#backgroundContainer {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    text-align: center;
+    border-radius: 5%;
+    box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    /* fallback for old browsers */
+    background: #e2e6ff;
+    /* Chrome 10-25, Safari 5.1-6 */
+    background: -webkit-linear-gradient(to top, #ffffff, #000000);
+    /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: linear-gradient(to top, #ffffff, 0000000);
+    display: block;
+}
+
+#loginContainer {
+    text-align: center;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5%;
+    width: 250px;
+    display: inline-block;
+}
+
+#logoContainer {
+    display: inline-block;
+    overflow: hidden;
+    text-align: center;
+    width: 250px;
+}
+
+#logoContainer img {
+    width: 140px;
+    height: auto;
+}
+
+#loginSubmit {
+    margin: auto;
+    border-radius: 5px;
+    -webkit-transition-duration: 0.4s;
+    transition-duration: 0.4s;
+    border: 0px;
+    font-weight: bold;
+    background-color: #4CAF50;
+    color: white;
+}
+
+#loginSubmit:hover {
+    background-color: rgb(72, 158, 75);
+    color: white;
+}
+
+input {
+    font-size: 1rem;
+    padding: 0.25rem;
+}

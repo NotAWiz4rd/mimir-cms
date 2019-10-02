@@ -1,0 +1,15 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+<div th:if="${errorMessage != null}">
+    <span>Fehlermeldung:</span>
+    <span style="color: red" th:text="${errorMessage}"></span>
+</div>
+<div th:if="${errorMessage == null}">
+    <span>Ein Fehler ist aufgetreten.</span>
+</div>
+</body>
+</html>
