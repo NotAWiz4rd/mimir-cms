@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -59,6 +60,15 @@ public class ArtifactService {
         this.thumbnailContentStore = thumbnailContentStore;
         this.thumbnailGenerator = thumbnailGenerator;
         this.contentService = contentService;
+    }
+
+    /**
+     * Return all artifacts
+     *
+     * @return
+     */
+    public List<Artifact> findAll() {
+        return artifactRepository.findAll();
     }
 
     /**
