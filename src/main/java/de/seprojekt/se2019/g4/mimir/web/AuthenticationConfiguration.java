@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Configuration;
  * - underscore notation (for .properties, .yml files): user.authentication.ldap.user_search_filter
  * - upper case format (for system environment variables): USER_AUTHENTICATION_LDAP_USERSEARCHFILTER
  */
-@Configuration
-@ConfigurationProperties(prefix = "user.authentication")
+//@Configuration
+//@ConfigurationProperties(prefix = "user.authentication")
 public class AuthenticationConfiguration {
     //user.authentication.method
     private Method method;

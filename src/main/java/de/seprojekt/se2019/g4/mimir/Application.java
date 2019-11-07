@@ -2,6 +2,7 @@ package de.seprojekt.se2019.g4.mimir;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
@@ -12,9 +13,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
  * https://www.baeldung.com/inversion-control-and-dependency-injection-in-spring
  * https://www.baeldung.com/constructor-injection-in-spring
  */
-@SpringBootApplication
-@EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@SpringBootApplication(exclude={SecurityAutoConfiguration.class})
+//@EnableWebSecurity
+//@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class Application {
 
     /**

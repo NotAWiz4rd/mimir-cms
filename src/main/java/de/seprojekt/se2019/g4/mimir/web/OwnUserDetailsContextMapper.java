@@ -18,7 +18,7 @@ import java.util.Collection;
  * https://stackoverflow.com/a/30983147
  * https://stackoverflow.com/q/37728277
  */
-@Configuration
+//@Configuration
 public class OwnUserDetailsContextMapper extends LdapUserDetailsMapper implements UserDetailsContextMapper {
 
     /**
