@@ -1,7 +1,6 @@
-package de.seprojekt.se2019.g4.mimir.web;
+package de.seprojekt.se2019.g4.mimir.security;
 
 import org.springframework.LdapDataEntry;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,6 +25,7 @@ public class OwnUserDetailsContextMapper extends LdapUserDetailsMapper implement
      * LDAP attribute, this class intercepts and return our custom {@link OwnUserDetails} containing more
      * LDAP attributes and the {@link LdapUserDetails} object itself.
      * return
+     *
      * @param ctx
      * @param username
      * @param authorities
@@ -40,6 +40,7 @@ public class OwnUserDetailsContextMapper extends LdapUserDetailsMapper implement
 
     /**
      * Load the additional LDAP information like surname or mail.
+     *
      * @param entry
      * @return
      */
@@ -54,6 +55,7 @@ public class OwnUserDetailsContextMapper extends LdapUserDetailsMapper implement
 
     /**
      * Return attribute value if the attribute exists. If not, return empty string.
+     *
      * @param ldapDataEntry
      * @param name
      * @return

@@ -23,6 +23,7 @@ public class IconDiscoveryWebController {
 
     /**
      * The parameter will be autowired by Spring.
+     *
      * @param iconDiscoverService
      */
     public IconDiscoveryWebController(IconDiscoverService iconDiscoverService) {
@@ -31,6 +32,7 @@ public class IconDiscoveryWebController {
 
     /**
      * The user can access the icon for a given mimeType by calling this interface.
+     *
      * @param mimeType
      * @return
      */

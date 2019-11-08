@@ -19,7 +19,7 @@ import javax.persistence.EntityNotFoundException;
 import java.io.InputStream;
 
 /**
- * This controller will offer an HTTP interface for the web page to load thumbnails.
+ * This controller will offer an HTTP interface for the security page to load thumbnails.
  */
 @Controller
 public class ThumbnailController {
@@ -52,7 +52,7 @@ public class ThumbnailController {
     }
 
     /**
-     * This method will be called, when the web page will access the given url and match certain criteria.
+     * This method will be called, when the security page will access the given url and match certain criteria.
      * It will return the thumbnail for the artifact with the given id.
      * @param id
      * @return

@@ -2,7 +2,7 @@ package de.seprojekt.se2019.g4.mimir.content.folder;
 
 import de.seprojekt.se2019.g4.mimir.content.Content;
 import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
+import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -15,19 +15,17 @@ import java.util.Objects;
 public class Folder implements Content {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(length = 512)
-    private String parentUrl;
-
-    @Column(unique = true, length = 512)
-    private String totalUrl;
+    @JoinColumn
+    @ManyToOne
+    @Nullable
+    private Folder parentFolder;
 
     @Column(length = 512)
     private String displayName;
 
-    @Override
     public Long getId() {
         return id;
     }
@@ -36,46 +34,20 @@ public class Folder implements Content {
         this.id = id;
     }
 
-    @Override
-    public String getParentUrl() {
-        return parentUrl;
+    public Folder getParentFolder() {
+        return parentFolder;
     }
 
-    @Override
-    public void setParentUrl(String parentUrl) {
-        Assert.isTrue(parentUrl.endsWith("/"), "parentUrl muss mit einem Schrägstrich enden");
-        this.parentUrl = parentUrl;
+    public void setParentFolder(Folder parentFolder) {
+        this.parentFolder = parentFolder;
     }
 
-    @Override
-    public String getTotalUrl() {
-        return totalUrl;
-    }
-
-    @Override
-    public void setTotalUrl(String totalUrl) {
-        Assert.isTrue(totalUrl.endsWith("/"), "totalUrl muss mit einem Schrägstrich enden");
-        this.totalUrl = totalUrl;
-    }
-
-    @Override
     public String getDisplayName() {
         return displayName;
     }
 
-    @Override
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
-    }
-
-    @Override
-    public boolean isLocked() {
-        return false;
-    }
-
-    @Override
-    public String getLockedByName() {
-        return "";
     }
 
     @Override
@@ -93,24 +65,22 @@ public class Folder implements Content {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Folder folder = (Folder) o;
-        return Objects.equals(id, folder.id) &&
-                Objects.equals(parentUrl, folder.parentUrl) &&
-                Objects.equals(totalUrl, folder.totalUrl) &&
-                Objects.equals(displayName, folder.displayName);
+        return id.equals(folder.id) &&
+                Objects.equals(parentFolder, folder.parentFolder) &&
+                displayName.equals(folder.displayName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, parentUrl, totalUrl, displayName);
+        return Objects.hash(id, parentFolder, displayName);
     }
 
     @Override
     public String toString() {
         return "Folder{" +
                 "id=" + id +
-                ", parentUrl='" + parentUrl + '\'' +
-                ", totalUrl='" + totalUrl + '\'' +
-                ", displayName='" + displayName + '\'' +
+                ", parentFolder=" + parentFolder +
+                ", displayName='" + displayName +
                 '}';
     }
 }

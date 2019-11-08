@@ -1,13 +1,9 @@
-
-
-package de.seprojekt.se2019.g4.mimir.web;
+package de.seprojekt.se2019.g4.mimir.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.ldap.LdapAuthenticationProviderConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,10 +11,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.password.LdapShaPasswordEncoder;
 import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
 
-import static de.seprojekt.se2019.g4.mimir.web.AuthenticationConfiguration.Ldap;
+import static de.seprojekt.se2019.g4.mimir.security.AuthenticationConfiguration.Ldap;
 
 /**
- * This class will configure the web and ldap security aspect of the application
+ * This class will configure the security and ldap security aspect of the application
  */
 //@Configuration
 //@EnableConfigurationProperties(AuthenticationConfiguration.class)
@@ -118,10 +114,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .passwordCompare()
                 /*
-                * we need LdapShaPasswordEncoder for using LDIF -
-                * LdapShaPasswordEncoder is deprecated because digest based password encoding is not considered secure.
-                * There are no plans to remove this support.
-                */
+                 * we need LdapShaPasswordEncoder for using LDIF -
+                 * LdapShaPasswordEncoder is deprecated because digest based password encoding is not considered secure.
+                 * There are no plans to remove this support.
+                 */
                 .passwordEncoder(new LdapShaPasswordEncoder())
                 .passwordAttribute(ldapConfig.getPasswordAttribute());
 

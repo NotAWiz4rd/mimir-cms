@@ -15,13 +15,14 @@ import java.util.Optional;
  */
 public interface FolderRepository extends JpaRepository<Folder, Long> {
 
-    List<Folder> findByParentUrl(String parentUrl);
+    List<Folder> findByParentFolder(Folder parentFolder);
 
-    List<Folder> findByParentUrlStartingWith(String parentUrl);
+    Optional<Folder> findByParentFolderAndDisplayName(Folder folder, String displayName);
 
-    Optional<Folder> findByTotalUrl(String totalUrl);
+    boolean existsByParentFolder(Folder parentFolder);
 
-    boolean existsByTotalUrl(String totalUrl);
+    boolean existsByParentFolderAndDisplayName(Folder parentFolder, String displayName);
 
-    boolean existsByParentUrlStartingWith(String parentUrl);
+    boolean existsByDisplayName(String displayName);
+
 }

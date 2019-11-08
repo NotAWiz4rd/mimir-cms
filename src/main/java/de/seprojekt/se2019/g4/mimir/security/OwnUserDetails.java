@@ -1,4 +1,4 @@
-package de.seprojekt.se2019.g4.mimir.web;
+package de.seprojekt.se2019.g4.mimir.security;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.ldap.userdetails.LdapUserDetails;

@@ -1,7 +1,4 @@
-package de.seprojekt.se2019.g4.mimir.web;
-
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+package de.seprojekt.se2019.g4.mimir.security;
 
 /**
  * Spring will create a 'singleton' of this class and will map the values of the environment variables like
