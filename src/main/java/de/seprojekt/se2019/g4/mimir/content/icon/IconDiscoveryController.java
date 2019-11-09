@@ -17,20 +17,22 @@ import java.util.concurrent.TimeUnit;
  * This controller offers an HTTP interface for accessing icons
  */
 @Controller
-public class IconDiscoveryWebController {
-    private final static Logger LOGGER = LoggerFactory.getLogger(IconDiscoveryWebController.class);
+public class IconDiscoveryController {
+    private final static Logger LOGGER = LoggerFactory.getLogger(IconDiscoveryController.class);
     private IconDiscoverService iconDiscoverService;
 
     /**
      * The parameter will be autowired by Spring.
+     *
      * @param iconDiscoverService
      */
-    public IconDiscoveryWebController(IconDiscoverService iconDiscoverService) {
+    public IconDiscoveryController(IconDiscoverService iconDiscoverService) {
         this.iconDiscoverService = iconDiscoverService;
     }
 
     /**
      * The user can access the icon for a given mimeType by calling this interface.
+     *
      * @param mimeType
      * @return
      */

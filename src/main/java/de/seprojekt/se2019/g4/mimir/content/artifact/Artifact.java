@@ -1,11 +1,11 @@
 package de.seprojekt.se2019.g4.mimir.content.artifact;
 
 import de.seprojekt.se2019.g4.mimir.content.Content;
+import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.Thumbnail;
 import org.springframework.content.commons.annotations.ContentId;
 import org.springframework.content.commons.annotations.ContentLength;
 import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -23,23 +23,15 @@ public class Artifact implements Content {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(length = 512)
-    private String parentUrl;
-
-    @Column(unique = true, length = 512)
-    private String totalUrl;
+    @JoinColumn
+    @ManyToOne
+    private Folder parentFolder;
 
     @Column(length = 512)
     private String displayName;
 
     @Column
     private String author;
-
-    @Column
-    private boolean locked;
-
-    @Column
-    private String lockedByName;
 
     @Column
     private Instant lastChange;
@@ -59,7 +51,6 @@ public class Artifact implements Content {
     @JoinColumn(name = "thumbnail_id")
     private Thumbnail thumbnail = new Thumbnail();
 
-    @Override
     public Long getId() {
         return id;
     }
@@ -68,88 +59,20 @@ public class Artifact implements Content {
         this.id = id;
     }
 
-    @Override
-    public String getParentUrl() {
-        return parentUrl;
+    public Folder getParentFolder() {
+        return parentFolder;
     }
 
-    @Override
-    public void setParentUrl(String parentUrl) {
-        Assert.isTrue(parentUrl.endsWith("/"), "parentUrl muss mit einem Schrägstrich enden");
-        this.parentUrl = parentUrl;
+    public void setParentFolder(Folder parentFolder) {
+        this.parentFolder = parentFolder;
     }
 
-    @Override
-    public String getTotalUrl() {
-        return totalUrl;
-    }
-
-    @Override
-    public void setTotalUrl(String totalUrl) {
-        Assert.isTrue(!totalUrl.endsWith("/"), "totalUrl darf nicht mit einem Schrägstrich enden");
-        this.totalUrl = totalUrl;
-    }
-
-    @Override
     public String getDisplayName() {
         return displayName;
     }
 
-    @Override
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
-    }
-
-    public UUID getContentId() {
-        return contentId;
-    }
-
-    public void setContentId(UUID contentId) {
-        this.contentId = contentId;
-    }
-
-    public Long getContentLength() {
-        return contentLength;
-    }
-
-    public void setContentLength(Long contentLength) {
-        this.contentLength = contentLength;
-    }
-
-    public Thumbnail getThumbnail() {
-        return thumbnail;
-    }
-
-    @Override
-    public MediaType getContentType() {
-        return contentType;
-    }
-
-    @Override
-    public boolean isArtifact() {
-        return true;
-    }
-
-    public void setContentType(MediaType contentType) {
-        this.contentType = contentType;
-    }
-
-    @Override
-    public boolean isLocked() {
-        return locked;
-    }
-
-    public void setLocked(boolean locked) {
-        this.locked = locked;
-    }
-
-    @Override
-    public String getLockedByName() {
-        return lockedByName;
-    }
-
-    public void setLockedByName(String lockedByName) {
-        this.lockedByName = lockedByName;
     }
 
     public String getAuthor() {
@@ -168,38 +91,73 @@ public class Artifact implements Content {
         this.lastChange = lastChange;
     }
 
+    public UUID getContentId() {
+        return contentId;
+    }
+
+    public void setContentId(UUID contentId) {
+        this.contentId = contentId;
+    }
+
+    public Long getContentLength() {
+        return contentLength;
+    }
+
+    public void setContentLength(Long contentLength) {
+        this.contentLength = contentLength;
+    }
+
+    public MediaType getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(MediaType contentType) {
+        this.contentType = contentType;
+    }
+
+    @Override
+    public boolean isArtifact() {
+        return true;
+    }
+
+    public Thumbnail getThumbnail() {
+        return thumbnail;
+    }
+
+    public void setThumbnail(Thumbnail thumbnail) {
+        this.thumbnail = thumbnail;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Artifact artifact = (Artifact) o;
-        return locked == artifact.locked &&
-                Objects.equals(id, artifact.id) &&
-                Objects.equals(parentUrl, artifact.parentUrl) &&
-                Objects.equals(totalUrl, artifact.totalUrl) &&
-                Objects.equals(displayName, artifact.displayName) &&
-                Objects.equals(lockedByName, artifact.lockedByName) &&
-                Objects.equals(contentId, artifact.contentId) &&
-                Objects.equals(contentLength, artifact.contentLength) &&
-                Objects.equals(contentType, artifact.contentType) &&
-                Objects.equals(thumbnail, artifact.thumbnail);
+        return id.equals(artifact.id) &&
+                parentFolder.equals(artifact.parentFolder) &&
+                displayName.equals(artifact.displayName) &&
+                author.equals(artifact.author) &&
+                lastChange.equals(artifact.lastChange) &&
+                contentId.equals(artifact.contentId) &&
+                contentLength.equals(artifact.contentLength) &&
+                contentType.equals(artifact.contentType) &&
+                thumbnail.equals(artifact.thumbnail);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, parentUrl, totalUrl, displayName, locked, lockedByName, contentId, contentLength, contentType, thumbnail);
+        return Objects.hash(id, parentFolder, displayName, author, lastChange, contentId, contentLength, contentType, thumbnail);
     }
 
     @Override
     public String toString() {
         return "Artifact{" +
                 "id=" + id +
-                ", parentUrl='" + parentUrl + '\'' +
-                ", totalUrl='" + totalUrl + '\'' +
+                ", parentFolder=" + parentFolder +
                 ", displayName='" + displayName + '\'' +
-                ", locked=" + locked +
-                ", lockedByName='" + lockedByName + '\'' +
-                ", contentId='" + contentId + '\'' +
+                ", author='" + author + '\'' +
+                ", lastChange=" + lastChange +
+                ", contentId=" + contentId +
                 ", contentLength=" + contentLength +
                 ", contentType=" + contentType +
                 ", thumbnail=" + thumbnail +

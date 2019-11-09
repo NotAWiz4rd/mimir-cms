@@ -1,6 +1,5 @@
 package de.seprojekt.se2019.g4.mimir;
 
-import de.seprojekt.se2019.g4.mimir.content.ContentService;
 import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactService;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
@@ -16,11 +15,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.util.List;
 
 /**
  * This class will be automatically executed on application startup, when then current profile != test is.
- *
  */
 @Service
 @Profile("!test")
@@ -30,46 +27,42 @@ public class ExampleDataGenerator implements CommandLineRunner {
     private ArtifactService artifactService;
     private FolderService folderService;
     private Principal principal;
-    private ContentService contentService;
 
-    public ExampleDataGenerator(ArtifactService artifactService, FolderService folderService, ContentService contentService) {
+    public ExampleDataGenerator(ArtifactService artifactService, FolderService folderService) {
         this.artifactService = artifactService;
         this.folderService = folderService;
-        this.contentService = contentService;
-        this.principal = () -> "thellmann";
+        this.principal = () -> "GENERATOR-USER";
     }
 
     /**
      * When this CommandLineRunner is executed, folders will be created and artifacts will be added.
+     *
      * @param args
      * @throws Exception
      */
     @Override
     public void run(String... args) throws Exception {
-        int numberOfElements = contentService.findContentForFolder("/").map(List::size).orElse(0);
-        if (numberOfElements > 0) {
-            LOGGER.info("Database is not empty - abort generation of example data");
-            return;
-        }
+        Folder root = folderService.create(null, "root");
 
-        Folder folder1 = folderService.create("/", "Aufgabe 📬");
+        Folder task = folderService.create(folderService.findByParentFolderAndDisplayName(null, "root").get(), "Aufgabe 📬");
 
-        uploadFile("/", "Innenhof", MediaType.IMAGE_JPEG, "example_data/innenhof.jpg");
-        uploadFile(folder1.getTotalUrl(), "SE-Projekt Aufgabe", MediaType.TEXT_HTML, "example_data/aufgabenstellung.html");
-        uploadFile("/", "Beispielvideo Final1", MediaType.valueOf("video/mp4"), "example_data/SampleVideo_1280x720_5mb.mp4");
+        uploadFile(root, "Innenhof", MediaType.IMAGE_JPEG, "example_data/innenhof.jpg");
+        uploadFile(task, "SE-Projekt Aufgabe", MediaType.TEXT_HTML, "example_data/aufgabenstellung.html");
+        uploadFile(root, "Beispielvideo Final1", MediaType.valueOf("video/mp4"), "example_data/SampleVideo_1280x720_5mb.mp4");
     }
 
     /**
      * source: https://stackoverflow.com/a/20572072
+     *
      * @param systemPath
      * @param name
      * @param mediaType
-     * @param parentUrl
+     * @param parentFolder
      * @throws IOException
      */
-    private void uploadFile(String parentUrl, String name, MediaType mediaType, String systemPath) throws IOException {
+    private void uploadFile(Folder parentFolder, String name, MediaType mediaType, String systemPath) throws IOException {
         MultipartFile multipartFile = new ExampleMultipartFile(name, mediaType, new ClassPathResource(systemPath));
-        artifactService.initialCheckin(name, multipartFile, parentUrl, principal);
+        artifactService.upload(name, multipartFile, parentFolder, principal);
         LOGGER.info("Added artifact '{}'", name);
     }
 }

@@ -1,7 +1,6 @@
 package de.seprojekt.se2019.g4.mimir.content.artifact;
 
-import de.seprojekt.se2019.g4.mimir.content.ContentService;
-import de.seprojekt.se2019.g4.mimir.content.DisplayableException;
+import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.Thumbnail;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.ThumbnailContentStore;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.ThumbnailGenerator;
@@ -11,21 +10,15 @@ import org.apache.tika.mime.MimeTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -33,17 +26,14 @@ import java.util.Optional;
  */
 @Service
 public class ArtifactService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(ArtifactService.class);
     private static long ONE_KB = 1000;
     private static long ONE_MB = ONE_KB * ONE_KB;
     private static long ONE_GB = ONE_KB * ONE_MB;
-
-    private final static Logger LOGGER = LoggerFactory.getLogger(ArtifactService.class);
-
     private ArtifactRepository artifactRepository;
     private ArtifactContentStore artifactContentStore;
     private ThumbnailContentStore thumbnailContentStore;
     private ThumbnailGenerator thumbnailGenerator;
-    private ContentService contentService;
 
     /**
      * The parameters will be autowired by Spring.
@@ -52,14 +42,12 @@ public class ArtifactService {
      * @param artifactContentStore
      * @param thumbnailContentStore
      * @param thumbnailGenerator
-     * @param contentService
      */
-    public ArtifactService(ArtifactRepository artifactRepository, ArtifactContentStore artifactContentStore, ThumbnailContentStore thumbnailContentStore, ThumbnailGenerator thumbnailGenerator, ContentService contentService) {
+    public ArtifactService(ArtifactRepository artifactRepository, ArtifactContentStore artifactContentStore, ThumbnailContentStore thumbnailContentStore, ThumbnailGenerator thumbnailGenerator) {
         this.artifactRepository = artifactRepository;
         this.artifactContentStore = artifactContentStore;
         this.thumbnailContentStore = thumbnailContentStore;
         this.thumbnailGenerator = thumbnailGenerator;
-        this.contentService = contentService;
     }
 
     /**
@@ -72,13 +60,13 @@ public class ArtifactService {
     }
 
     /**
-     * Return the artifact with the given total url.
+     * Return the artifact with the given parent folder
      *
-     * @param totalUrl
+     * @param parentFolder
      * @return
      */
-    public Optional<Artifact> findByTotalUrl(String totalUrl) {
-        return artifactRepository.findByTotalUrl(totalUrl);
+    public List<Artifact> findByParentFolder(Folder parentFolder) {
+        return artifactRepository.findByParentFolder(parentFolder);
     }
 
     /**
@@ -92,12 +80,12 @@ public class ArtifactService {
     }
 
     /**
-     * Find and return the file of an artifact as an input stream.
+     * Find and return the content of an artifact as an input stream.
      *
      * @param artifact
      * @return
      */
-    public InputStream findArtifact(Artifact artifact) {
+    public InputStream findArtifactContent(Artifact artifact) {
         return artifactContentStore.getContent(artifact);
     }
 
@@ -114,81 +102,33 @@ public class ArtifactService {
     }
 
     /**
-     * Check if an artifact with the given total url exists.
+     * Check if an artifact exists with a given name in a specific folder
      *
-     * @param totalUrl
+     * @param parentFolder
+     * @param displayName
      * @return
      */
-    public boolean existsByTotalUrl(String totalUrl) {
-        return artifactRepository.existsByTotalUrl(totalUrl);
+    public boolean existsByParentFolderAndDisplayName(Folder parentFolder, String displayName) {
+        return artifactRepository.existsByParentFolderAndDisplayName(parentFolder, displayName);
     }
 
     /**
      * Create a new artifact with a file.
-     * This method will perform some checks (is file not empty?, is name not empty? is the name not dangerous? is the name
-     * already given?).
      *
-     * @param name
+     *
+     * @param displayName
      * @param file
-     * @param currentUrl
+     * @param parentFolder
      * @param principal
      * @return
      * @throws IOException
      */
     @Transactional
-    public Artifact initialCheckin(String name, MultipartFile file, String currentUrl, Principal principal) throws IOException {
-        if (file == null || file.getContentType() == null || file.isEmpty()) {
-            throw new DisplayableException("Bitte wähle eine Datei für den initialen CheckIn aus.");
-        }
-
-        if (StringUtils.isEmpty(name)) {
-            name = FilenameUtils.removeExtension(file.getOriginalFilename());
-        }
-        if (StringUtils.isEmpty(name)) {
-            throw new DisplayableException("Bitte gebe einen Namen für den initialen CheckIn an.");
-        }
-        if (contentService.isNameDangerous(name)) {
-            throw new DisplayableException("Der Artefaktname darf keine verbotene Zeichen enthalten.");
-        }
-
-        String totalUrl = currentUrl + name;
-        if (existsByTotalUrl(totalUrl)) {
-            throw new DisplayableException("Der Name ist schon vergeben.");
-        }
-
-        if (totalUrl.length() > 300) {
-            throw new DisplayableException("Der Name ist zu lang.");
-        }
-
+    public Artifact upload(String displayName, MultipartFile file, Folder parentFolder, Principal principal) throws IOException {
         Artifact artifact = new Artifact();
-        artifact.setDisplayName(name);
-        artifact.setParentUrl(currentUrl);
-        artifact.setTotalUrl(totalUrl);
+        artifact.setDisplayName(displayName);
+        artifact.setParentFolder(parentFolder);
         return saveWithFileAndThumbnail(artifact, file, principal);
-    }
-
-    /**
-     * Checkin a new file for an existing artifact.
-     * This method will perform some checks (is the file not empty? is the file only locked by the current user?).
-     *
-     * @param id
-     * @param newFile
-     * @return
-     */
-    @Transactional
-    public Artifact checkin(long id, MultipartFile newFile, Principal principal) throws IOException {
-        Artifact artifact = findById(id).orElseThrow(EntityNotFoundException::new);
-        if (!isLockedByCurrentUser(artifact)) {
-            throw new DisplayableException("Artefakt ist nicht vom aktuellen Benutzer gesperrt.");
-        }
-
-        if (newFile == null || newFile.getContentType() == null || newFile.isEmpty()) {
-            throw new DisplayableException("Bitte wähle eine Datei für den CheckIn aus.");
-        }
-
-        artifact.setLocked(false);
-        artifact.setLockedByName("");
-        return saveWithFileAndThumbnail(artifact, newFile, principal);
     }
 
     /**
@@ -202,6 +142,9 @@ public class ArtifactService {
      * @return
      */
     private Artifact saveWithFileAndThumbnail(Artifact artifact, MultipartFile file, Principal principal) throws IOException {
+        // TODO CHANGE AFTER USER MANAGEMENT IMPLEMENTATION
+        principal = () -> "ROOT-USER";
+
         // force deletion of the file and thumbnail by unsetting and saving them
         artifactContentStore.unsetContent(artifact);
         thumbnailContentStore.unsetContent(artifact.getThumbnail());
@@ -231,51 +174,12 @@ public class ArtifactService {
     }
 
     /**
-     * Checkout an existing artifact.
-     * This method will perform some checks (is the artifact not locked?).
-     *
-     * @param artifact
-     * @return
-     */
-    @Transactional
-    public Artifact checkout(Artifact artifact, Principal principal) {
-        if (artifact.isLocked()) {
-            throw new DisplayableException("Das Artefakt kann nicht ausgecheckt werden, weil es gesperrt ist.");
-        }
-        artifact.setLocked(true);
-        artifact.setLockedByName(principal.getName());
-        return artifactRepository.save(artifact);
-    }
-
-    /**
-     * Unlock the artifact.
-     * This method will perform some checks (is the artifact locked?).
-     *
-     * @param artifact
-     * @return
-     */
-    @Transactional
-    public Artifact forceUnlock(Artifact artifact) {
-        if (!artifact.isLocked()) {
-            throw new DisplayableException("Das Artefakt kann nicht entsperrt werden, weil es nicht gesperrt ist.");
-        }
-        artifact.setLocked(false);
-        artifact.setLockedByName("");
-        return artifactRepository.save(artifact);
-    }
-
-    /**
      * Deletes the artifacts with its file and thumbnail.
-     * This method will perform some checks (is the artifact not locked?).
-     *
+     *      *
      * @param artifact
      */
     @Transactional
     public void delete(Artifact artifact) {
-        if (artifact.isLocked()) {
-            throw new DisplayableException("Das Artefakt kann nicht gelöscht werden, weil es gesperrt ist.");
-        }
-
         artifactContentStore.unsetContent(artifact);
         thumbnailContentStore.unsetContent(artifact.getThumbnail());
         // only after a repository.save(), contentStore.unsetContent() will delete the file -
@@ -284,64 +188,7 @@ public class ArtifactService {
         artifactRepository.delete(artifact);
     }
 
-    /**
-     * Rename an artifact (by its id) and check, if the new name is available.
-     * Please do not longer use the original artifact object, use the returned artifact object.
-     *
-     * @param artifactId
-     * @param newName
-     * @return
-     */
-    @Transactional
-    public Artifact rename(long artifactId, String newName) {
-        Artifact artifact = artifactRepository.findById(artifactId).orElseThrow(EntityNotFoundException::new);
-        String totalUrl = artifact.getParentUrl() + newName;
 
-        if (artifact.isLocked()) {
-            throw new DisplayableException("Das Artefakt kann nicht umbenannt werden, weil es gesperrt ist.");
-        }
-        if (contentService.isNameDangerous(newName)) {
-            throw new DisplayableException("Der Artefaktname darf keine verbotene Zeichen enthalten.");
-        }
-        if (artifactRepository.existsByTotalUrl(totalUrl)) {
-            throw new DisplayableException("cant rename because new name is already used");
-        }
-        if (totalUrl.length() > 300) {
-            throw new DisplayableException("Der Name ist zu lang.");
-        }
-
-        artifact.setTotalUrl(totalUrl);
-        artifact.setDisplayName(newName);
-        return artifactRepository.save(artifact);
-    }
-
-    /**
-     * Check if the given artifact is locked only from the current user (and not someone else).
-     *
-     * @param artifact
-     * @return
-     */
-    public boolean isLockedByCurrentUser(Artifact artifact) {
-        if (!artifact.isLocked()) {
-            return false;
-        }
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication instanceof AnonymousAuthenticationToken) {
-            return false;
-        }
-
-        return Objects.equals(artifact.getLockedByName(), authentication.getName());
-    }
-
-    /**
-     * Return the size of an artifact in KB, MB, GB (base 10) and not KiBi, MiBi, GiBi (base 2) like FileUtils.
-     * Copied and modified from:
-     * https://github.com/apache/commons-io/blob/master/src/main/java/org/apache/commons/io/FileUtils.java#L380 (Apache License 2.0)
-     *
-     * @param artifact
-     * @return
-     */
     public String byteCountToDisplaySize(Artifact artifact) {
         String displaySize;
         long size = artifact.getContentLength();

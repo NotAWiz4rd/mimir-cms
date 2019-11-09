@@ -10,21 +10,9 @@ public interface Content {
 
     Long getId();
 
-    String getParentUrl();
-
-    void setParentUrl(String parentUrl);
-
-    String getTotalUrl();
-
-    void setTotalUrl(String totalUrl);
-
     String getDisplayName();
 
     void setDisplayName(String displayName);
-
-    boolean isLocked();
-
-    String getLockedByName();
 
     MediaType getContentType();
 
