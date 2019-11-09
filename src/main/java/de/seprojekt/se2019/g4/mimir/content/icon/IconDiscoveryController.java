@@ -17,8 +17,8 @@ import java.util.concurrent.TimeUnit;
  * This controller offers an HTTP interface for accessing icons
  */
 @Controller
-public class IconDiscoveryWebController {
-    private final static Logger LOGGER = LoggerFactory.getLogger(IconDiscoveryWebController.class);
+public class IconDiscoveryController {
+    private final static Logger LOGGER = LoggerFactory.getLogger(IconDiscoveryController.class);
     private IconDiscoverService iconDiscoverService;
 
     /**
@@ -26,7 +26,7 @@ public class IconDiscoveryWebController {
      *
      * @param iconDiscoverService
      */
-    public IconDiscoveryWebController(IconDiscoverService iconDiscoverService) {
+    public IconDiscoveryController(IconDiscoverService iconDiscoverService) {
         this.iconDiscoverService = iconDiscoverService;
     }
 

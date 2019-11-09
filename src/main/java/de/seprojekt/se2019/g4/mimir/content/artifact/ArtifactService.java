@@ -60,7 +60,7 @@ public class ArtifactService {
     }
 
     /**
-     * Return the artifact with the given total url.
+     * Return the artifact with the given parent folder
      *
      * @param parentFolder
      * @return
@@ -80,7 +80,7 @@ public class ArtifactService {
     }
 
     /**
-     * Find and return the file of an artifact as an input stream.
+     * Find and return the content of an artifact as an input stream.
      *
      * @param artifact
      * @return
@@ -102,7 +102,7 @@ public class ArtifactService {
     }
 
     /**
-     * Check if an artifact exists
+     * Check if an artifact exists with a given name in a specific folder
      *
      * @param parentFolder
      * @param displayName
@@ -114,8 +114,7 @@ public class ArtifactService {
 
     /**
      * Create a new artifact with a file.
-     * This method will perform some checks (is file not empty?, is name not empty? is the name not dangerous? is the name
-     * already given?).
+     *
      *
      * @param displayName
      * @param file
@@ -176,8 +175,7 @@ public class ArtifactService {
 
     /**
      * Deletes the artifacts with its file and thumbnail.
-     * This method will perform some checks (is the artifact not locked?).
-     *
+     *      *
      * @param artifact
      */
     @Transactional

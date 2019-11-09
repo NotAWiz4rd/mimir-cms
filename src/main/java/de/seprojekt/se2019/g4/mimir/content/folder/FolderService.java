@@ -51,12 +51,16 @@ public class FolderService {
         return folderRepository.findByParentFolderAndDisplayName(parentFolder, displayName);
     }
 
+    /**
+     * Return a list of root folders
+     * @return
+     */
     public List<Folder> findRootFolder() {
         return folderRepository.findByParentFolder(null);
     }
 
     /**
-     * Returns the content of a folder.
+     * Returns the content list of a folder.
      *
      * @param folder
      * @return
@@ -70,8 +74,7 @@ public class FolderService {
     }
 
     /**
-     * Create a new folder and validate the parentUrl and nameWithoutEndingSlash.
-     * This method will perform some checks (is name not dangerous? does a folder with the name already exists?).
+     * Create a new folder in the given parent folder with a given name
      *
      * @param parentFolder
      * @param displayName
@@ -87,7 +90,7 @@ public class FolderService {
     }
 
     /**
-     * Check if a folder with the given parentUrl and nameWithoutEndingSlash already exists
+     * Check if a folder in the given parent folder with the given name already exists
      *
      * @param parentFolder
      * @param displayName

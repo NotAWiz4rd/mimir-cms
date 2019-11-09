@@ -18,8 +18,8 @@ import java.util.Optional;
  */
 @Controller
 @PreAuthorize("isAuthenticated()")
-public class FolderResource {
-    private final static Logger LOGGER = LoggerFactory.getLogger(FolderResource.class);
+public class FolderController {
+    private final static Logger LOGGER = LoggerFactory.getLogger(FolderController.class);
     private FolderService folderService;
     private String applicationBaseUrl;
 
@@ -29,7 +29,7 @@ public class FolderResource {
      * @param folderService
      * @param applicationBaseUrl
      */
-    public FolderResource(FolderService folderService, @Value("${application.base.url}") String applicationBaseUrl) {
+    public FolderController(FolderService folderService, @Value("${application.base.url}") String applicationBaseUrl) {
         this.folderService = folderService;
         this.applicationBaseUrl = applicationBaseUrl;
     }

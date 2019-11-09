@@ -23,8 +23,8 @@ import java.util.Optional;
  */
 @Controller
 @PreAuthorize("isAuthenticated()")
-public class ArtifactResource {
-    private final static Logger LOGGER = LoggerFactory.getLogger(ArtifactResource.class);
+public class ArtifactController {
+    private final static Logger LOGGER = LoggerFactory.getLogger(ArtifactController.class);
 
     private ArtifactService artifactService;
     private FolderService folderService;
@@ -35,7 +35,7 @@ public class ArtifactResource {
      * @param artifactService
      * @param folderService
      */
-    public ArtifactResource(ArtifactService artifactService, FolderService folderService) {
+    public ArtifactController(ArtifactService artifactService, FolderService folderService) {
         this.artifactService = artifactService;
         this.folderService = folderService;
     }
