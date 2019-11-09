@@ -20,8 +20,8 @@ import static de.seprojekt.se2019.g4.mimir.web.AuthenticationConfiguration.Ldap;
 /**
  * This class will configure the web and ldap security aspect of the application
  */
-@Configuration
-@EnableConfigurationProperties(AuthenticationConfiguration.class)
+//@Configuration
+//@EnableConfigurationProperties(AuthenticationConfiguration.class)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final static Logger LOGGER = LoggerFactory.getLogger(WebSecurityConfig.class);
     private AuthenticationConfiguration config;
@@ -52,21 +52,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/").permitAll()
                 .antMatchers("/favicon.png").permitAll()
                 .antMatchers("/favicon.ico").permitAll()
-                .antMatchers("/favicon").permitAll()
-                .antMatchers("/js/**").permitAll()
-                .antMatchers("/css/**").permitAll()
-                .antMatchers("/fonts/**").permitAll()
-                .antMatchers("/media/**").permitAll()
                 .anyRequest().authenticated();
 
         //allow iframes
         http.headers().frameOptions().sameOrigin();
-
-        //add login page and redirect to the base url
-        http.formLogin().loginPage("/login").defaultSuccessUrl(applicationBaseUrl).permitAll();
-
-        //add logout
-        http.logout().permitAll();
     }
 
     /**

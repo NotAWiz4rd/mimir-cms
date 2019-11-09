@@ -5,6 +5,10 @@ import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.CacheControl;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +21,9 @@ import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This controller offers an HTTP interface for manipulating artifacts (e.g. deleting, creating etc.)
@@ -43,6 +50,18 @@ public class ArtifactWebController {
         this.artifactService = artifactService;
         this.folderService = folderService;
         this.applicationBaseUrl = applicationBaseUrl;
+    }
+
+    /**
+     * The user can do an initial checkin of an artifact by calling this interface.
+     *
+     * @return
+     * @throws IOException
+     */
+    @GetMapping(value = "/artifact")
+    public ResponseEntity<List<Artifact>> getAllIds() throws IOException {
+        List<Artifact> artifacts = artifactService.findAll();
+        return ResponseEntity.ok().body(artifacts);
     }
 
     /**
