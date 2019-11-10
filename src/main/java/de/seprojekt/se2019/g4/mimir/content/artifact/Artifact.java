@@ -1,9 +1,6 @@
 package de.seprojekt.se2019.g4.mimir.content.artifact;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.*;
 import de.seprojekt.se2019.g4.mimir.content.Content;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.Thumbnail;
@@ -21,7 +18,7 @@ import java.util.UUID;
  * The result of a artifact table query will be mapped on objects from this class.
  */
 @Entity
-public class Artifact implements Content {
+public class Artifact {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -35,25 +32,28 @@ public class Artifact implements Content {
     private Folder parentFolder;
 
     @Column(length = 512)
-    private String displayName;
+    private String name;
 
     @Column
     private String author;
 
     @Column
-    private Instant lastChange;
+    private Instant creationDate;
 
     @ContentId
     @Column
+    @JsonIgnore
     private UUID contentId;
 
     @ContentLength
     @Column
+
     private Long contentLength;
 
     @Column(length = 512)
     private MediaType contentType;
 
+    @JsonIgnore
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "thumbnail_id")
     private Thumbnail thumbnail = new Thumbnail();
@@ -66,6 +66,11 @@ public class Artifact implements Content {
         this.id = id;
     }
 
+    @JsonProperty("contentType")
+    public String getShortContentType() {
+        return this.contentType.getType() + "/" + this.contentType.getSubtype();
+    }
+
     public Folder getParentFolder() {
         return parentFolder;
     }
@@ -74,12 +79,12 @@ public class Artifact implements Content {
         this.parentFolder = parentFolder;
     }
 
-    public String getDisplayName() {
-        return displayName;
+    public String getName() {
+        return name;
     }
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getAuthor() {
@@ -88,14 +93,6 @@ public class Artifact implements Content {
 
     public void setAuthor(String author) {
         this.author = author;
-    }
-
-    public Instant getLastChange() {
-        return lastChange;
-    }
-
-    public void setLastChange(Instant lastChange) {
-        this.lastChange = lastChange;
     }
 
     public UUID getContentId() {
@@ -122,17 +119,20 @@ public class Artifact implements Content {
         this.contentType = contentType;
     }
 
-    @Override
-    public boolean isArtifact() {
-        return true;
-    }
-
     public Thumbnail getThumbnail() {
         return thumbnail;
     }
 
     public void setThumbnail(Thumbnail thumbnail) {
         this.thumbnail = thumbnail;
+    }
+
+    public Instant getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Instant creationDate) {
+        this.creationDate = creationDate;
     }
 
     @Override
@@ -142,9 +142,9 @@ public class Artifact implements Content {
         Artifact artifact = (Artifact) o;
         return id.equals(artifact.id) &&
                 parentFolder.equals(artifact.parentFolder) &&
-                displayName.equals(artifact.displayName) &&
+                name.equals(artifact.name) &&
                 author.equals(artifact.author) &&
-                lastChange.equals(artifact.lastChange) &&
+                creationDate.equals(artifact.creationDate) &&
                 contentId.equals(artifact.contentId) &&
                 contentLength.equals(artifact.contentLength) &&
                 contentType.equals(artifact.contentType) &&
@@ -153,7 +153,7 @@ public class Artifact implements Content {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, parentFolder, displayName, author, lastChange, contentId, contentLength, contentType, thumbnail);
+        return Objects.hash(id, parentFolder, name, author, creationDate, contentId, contentLength, contentType, thumbnail);
     }
 
     @Override
@@ -161,13 +161,14 @@ public class Artifact implements Content {
         return "Artifact{" +
                 "id=" + id +
                 ", parentFolder=" + parentFolder +
-                ", displayName='" + displayName + '\'' +
+                ", name='" + name + '\'' +
                 ", author='" + author + '\'' +
-                ", lastChange=" + lastChange +
+                ", creationDate=" + creationDate +
                 ", contentId=" + contentId +
                 ", contentLength=" + contentLength +
                 ", contentType=" + contentType +
                 ", thumbnail=" + thumbnail +
                 '}';
     }
+
 }

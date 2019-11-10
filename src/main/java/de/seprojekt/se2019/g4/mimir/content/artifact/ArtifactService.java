@@ -1,6 +1,7 @@
 package de.seprojekt.se2019.g4.mimir.content.artifact;
 
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
+import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.Thumbnail;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.ThumbnailContentStore;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.ThumbnailGenerator;
@@ -105,11 +106,11 @@ public class ArtifactService {
      * Check if an artifact exists with a given name in a specific folder
      *
      * @param parentFolder
-     * @param displayName
+     * @param name
      * @return
      */
-    public boolean existsByParentFolderAndDisplayName(Folder parentFolder, String displayName) {
-        return artifactRepository.existsByParentFolderAndDisplayName(parentFolder, displayName);
+    public boolean existsByParentFolderAndDisplayName(Folder parentFolder, String name) {
+        return artifactRepository.existsByParentFolderAndName(parentFolder, name);
     }
 
     /**
@@ -126,22 +127,10 @@ public class ArtifactService {
     @Transactional
     public Artifact upload(String displayName, MultipartFile file, Folder parentFolder, Principal principal) throws IOException {
         Artifact artifact = new Artifact();
-        artifact.setDisplayName(displayName);
+        artifact.setName(displayName);
         artifact.setParentFolder(parentFolder);
-        return saveWithFileAndThumbnail(artifact, file, principal);
-    }
+        artifact.setCreationDate(Instant.now());
 
-    /**
-     * Creates/updates a artifact and create/update its file and its thumbnail.
-     * Moreover, metadata like author, lastChange, contentType will be updated.
-     * Please do not longer use the original artifact object, use the returned artifact object.
-     *
-     * @param artifact
-     * @param file
-     * @param principal
-     * @return
-     */
-    private Artifact saveWithFileAndThumbnail(Artifact artifact, MultipartFile file, Principal principal) throws IOException {
         // TODO CHANGE AFTER USER MANAGEMENT IMPLEMENTATION
         principal = () -> "ROOT-USER";
 
@@ -157,7 +146,6 @@ public class ArtifactService {
             artifactContentStore.setContent(artifact, inputStream);
         }
         artifact.setAuthor(principal.getName());
-        artifact.setLastChange(Instant.now());
         Artifact updatedArtifact = artifactRepository.save(artifact);
 
         // generate thumbnail (beware - InputStreams are one-time-use only)
@@ -205,13 +193,13 @@ public class ArtifactService {
     }
 
     /**
-     * If the display name does not have a file extension, then try to calculate the file extension from its content type.
+     * If the name does not have a file extension, then try to calculate the file extension from its content type.
      *
      * @param artifact
      * @return
      */
     public String calculateFileName(Artifact artifact) {
-        String displayName = artifact.getDisplayName();
+        String displayName = artifact.getName();
         if (!FilenameUtils.getExtension(displayName).isEmpty()) {
             return displayName;
         }
@@ -222,7 +210,7 @@ public class ArtifactService {
             return FilenameUtils.getBaseName(displayName) + extension;
         } catch (MimeTypeException e) {
             LOGGER.error("cant find mimetype", e);
-            // its not possible, simply return the display name
+            // its not possible, simply return the name
             return displayName;
         }
     }

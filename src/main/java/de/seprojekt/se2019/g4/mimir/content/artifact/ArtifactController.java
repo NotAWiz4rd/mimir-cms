@@ -92,7 +92,7 @@ public class ArtifactController {
      * @throws IOException
      */
     @PostMapping(value = "/artifact")
-    public ResponseEntity<String> uploadArtifact(Principal principal, @RequestParam("parentFolderId") Long parentFolderId, @RequestParam("name") String name, @RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseEntity<String> uploadArtifact(Principal principal, @RequestParam("parentId") Long parentFolderId, @RequestParam("name") String name, @RequestParam("file") MultipartFile file) throws IOException {
         if (StringUtils.isEmpty(name)) {
             return ResponseEntity.badRequest().body("Name is empty!");
         }

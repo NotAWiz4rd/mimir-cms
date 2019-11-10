@@ -18,9 +18,9 @@ public interface ArtifactRepository extends JpaRepository<Artifact, Long> {
 
     List<Artifact> findByParentFolder(Folder parentFolder);
 
-    Optional<Artifact> findByParentFolderAndAndDisplayName(Folder parentFolder, String displayName);
+    Optional<Artifact> findByParentFolderAndName(Folder parentFolder, String name);
 
-    boolean existsByParentFolderAndDisplayName(Folder parentFolder, String displayName);
+    boolean existsByParentFolderAndName(Folder parentFolder, String name);
 
     boolean existsByParentFolder(Folder parentFolder);
 

@@ -10,9 +10,9 @@ public interface Content {
 
     Long getId();
 
-    String getDisplayName();
+    String getName();
 
-    void setDisplayName(String displayName);
+    void setName(String name);
 
     MediaType getContentType();
 

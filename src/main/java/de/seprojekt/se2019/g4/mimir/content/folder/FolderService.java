@@ -42,13 +42,14 @@ public class FolderService {
     }
 
     /**
-     * Return the folder optional with the given parent and display name
+     * Return the folder optional with the given parent and name
      *
      * @param parentFolder
+     * @param name
      * @return
      */
-    public Optional<Folder> findByParentFolderAndDisplayName(Folder parentFolder, String displayName) {
-        return folderRepository.findByParentFolderAndDisplayName(parentFolder, displayName);
+    public Optional<Folder> findByParentFolderAndDisplayName(Folder parentFolder, String name) {
+        return folderRepository.findByParentFolderAndName(parentFolder, name);
     }
 
     /**
@@ -60,17 +61,12 @@ public class FolderService {
     }
 
     /**
-     * Returns the content list of a folder.
-     *
-     * @param folder
+     * Return list of folder with given parent folder
+     * @param parentFolder
      * @return
      */
-    @Transactional
-    public List<Content> getContent(Folder folder) {
-        List<Content> content = new ArrayList<>();
-        content.addAll(folderRepository.findByParentFolder(folder));
-        content.addAll(artifactRepository.findByParentFolder(folder));
-        return content;
+    public List<Folder> findByParentFolder(Folder parentFolder) {
+        return folderRepository.findByParentFolder(parentFolder);
     }
 
     /**
@@ -83,7 +79,7 @@ public class FolderService {
     @Transactional
     public Folder create(Folder parentFolder, String displayName) {
         Folder folder = new Folder();
-        folder.setDisplayName(displayName);
+        folder.setName(displayName);
         folder.setParentFolder(parentFolder);
         return folderRepository.save(folder);
 
@@ -93,14 +89,14 @@ public class FolderService {
      * Check if a folder in the given parent folder with the given name already exists
      *
      * @param parentFolder
-     * @param displayName
+     * @param name
      * @return
      */
-    public boolean exists(Folder parentFolder, String displayName) {
+    public boolean exists(Folder parentFolder, String name) {
         if (parentFolder == null) { // is root folder
-            return folderRepository.existsByDisplayName(displayName);
+            return folderRepository.existsByName(name);
         } else {
-            return folderRepository.existsByParentFolderAndDisplayName(parentFolder, displayName);
+            return folderRepository.existsByParentFolderAndName(parentFolder, name);
         }
     }
 
