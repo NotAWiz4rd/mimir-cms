@@ -73,19 +73,19 @@ public class FolderController {
      * @return
      */
     @PostMapping(value = "/folder")
-    public ResponseEntity<String> create(@RequestParam("name") String name, @RequestParam("parentId") Long parentFolderId) {
+    public ResponseEntity<Folder> create(@RequestParam("name") String name, @RequestParam("parentId") Long parentFolderId) {
         if (StringUtils.isEmpty(name)) {
-            return ResponseEntity.badRequest().body("Name is empty!");
+            return ResponseEntity.badRequest().build();
         }
         Optional<Folder> parentFolder = folderService.findById(parentFolderId);
         if (parentFolder.isEmpty()) {
-            return ResponseEntity.badRequest().body("ParentFolder not found!");
+            return ResponseEntity.notFound().build();
         }
         if (parentFolder.isPresent() && folderService.exists(parentFolder.get(), name)) {
-            return ResponseEntity.badRequest().body("Folder with same name already exists!");
+            return ResponseEntity.status(409).build();
         }
         folderService.create(parentFolder.get(), name);
-        return ResponseEntity.ok().body("Successfully created new folder!");
+        return ResponseEntity.ok().body(folderService.create(parentFolder.get(), name));
     }
 
     /**
@@ -98,9 +98,9 @@ public class FolderController {
             return ResponseEntity.notFound().build();
         }
         if (folder.isPresent() && !folderService.isEmpty(folder.get())) {
-            return ResponseEntity.badRequest().body("Folder is not empty!");
+            return ResponseEntity.status(409).body("Folder is not empty!");
         }
         folderService.delete(folder.get());
-        return ResponseEntity.ok().body("Successfully deleted folder!");
+        return ResponseEntity.ok().build();
     }
 }
