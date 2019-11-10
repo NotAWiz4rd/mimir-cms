@@ -1,7 +1,6 @@
 package de.seprojekt.se2019.g4.mimir.content.artifact;
 
 import com.fasterxml.jackson.annotation.*;
-import de.seprojekt.se2019.g4.mimir.content.Content;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.Thumbnail;
 import org.springframework.content.commons.annotations.ContentId;
