@@ -1,5 +1,9 @@
 package de.seprojekt.se2019.g4.mimir.content.folder;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import de.seprojekt.se2019.g4.mimir.content.Content;
 import org.springframework.http.MediaType;
 import org.springframework.lang.Nullable;
@@ -18,9 +22,12 @@ public class Folder implements Content {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+    @JsonIdentityReference(alwaysAsId = true)
+    @JsonProperty("parentId")
+    @Nullable
     @JoinColumn
     @ManyToOne
-    @Nullable
     private Folder parentFolder;
 
     @Column(length = 512)

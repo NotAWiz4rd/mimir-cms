@@ -1,5 +1,9 @@
 package de.seprojekt.se2019.g4.mimir.content.artifact;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import de.seprojekt.se2019.g4.mimir.content.Content;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.Thumbnail;
@@ -23,6 +27,9 @@ public class Artifact implements Content {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+    @JsonIdentityReference(alwaysAsId = true)
+    @JsonProperty("parentId")
     @JoinColumn
     @ManyToOne
     private Folder parentFolder;
