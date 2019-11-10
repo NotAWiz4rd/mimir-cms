@@ -92,22 +92,21 @@ public class ArtifactController {
      * @throws IOException
      */
     @PostMapping(value = "/artifact")
-    public ResponseEntity<String> uploadArtifact(Principal principal, @RequestParam("parentFolderId") Long parentFolderId, @RequestParam("name") String name, @RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseEntity<Artifact> uploadArtifact(Principal principal, @RequestParam("parentId") Long parentFolderId, @RequestParam("name") String name, @RequestParam("file") MultipartFile file) throws IOException {
         if (StringUtils.isEmpty(name)) {
-            return ResponseEntity.badRequest().body("Name is empty!");
+            return ResponseEntity.badRequest().build();
         }
         if (file == null || file.getContentType() == null || file.isEmpty()) {
-            return ResponseEntity.badRequest().body("File is empty!");
+            return ResponseEntity.badRequest().build();
         }
         Optional<Folder> parentFolder = folderService.findById(parentFolderId);
         if (parentFolder.isEmpty()) {
-            return ResponseEntity.badRequest().body("Parent folder does not exist!");
+            return ResponseEntity.status(409).build();
         }
         if (artifactService.existsByParentFolderAndDisplayName(parentFolder.get(), name)) {
-            return ResponseEntity.badRequest().body("File with same name already exists in this folder!");
+            return ResponseEntity.status(409).build();
         }
-        artifactService.upload(name, file, parentFolder.get(), principal);
-        return ResponseEntity.ok().body("Successfully uploaded new artifact");
+        return ResponseEntity.ok().body(artifactService.upload(name, file, parentFolder.get(), principal));
     }
 
     /**
@@ -123,6 +122,6 @@ public class ArtifactController {
             return ResponseEntity.notFound().build();
         }
         artifactService.delete(artifact.get());
-        return ResponseEntity.ok().body("Successfully deleted artifact");
+        return ResponseEntity.ok().build();
     }
 }

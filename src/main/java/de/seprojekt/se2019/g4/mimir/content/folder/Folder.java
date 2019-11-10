@@ -1,7 +1,9 @@
 package de.seprojekt.se2019.g4.mimir.content.folder;
 
-import de.seprojekt.se2019.g4.mimir.content.Content;
-import org.springframework.http.MediaType;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
@@ -12,19 +14,23 @@ import java.util.Objects;
  * The result of a folder table query will be mapped on objects from this class.
  */
 @Entity
-public class Folder implements Content {
+
+public class Folder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+    @JsonIdentityReference(alwaysAsId = true)
+    @JsonProperty("parentId")
+    @Nullable
     @JoinColumn
     @ManyToOne
-    @Nullable
     private Folder parentFolder;
 
     @Column(length = 512)
-    private String displayName;
+    private String name;
 
     public Long getId() {
         return id;
@@ -42,23 +48,14 @@ public class Folder implements Content {
         this.parentFolder = parentFolder;
     }
 
-    public String getDisplayName() {
-        return displayName;
+    public String getName() {
+        return name;
     }
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    @Override
-    public MediaType getContentType() {
-        return MediaType.valueOf("inode/directory");
-    }
-
-    @Override
-    public boolean isArtifact() {
-        return false;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -67,12 +64,12 @@ public class Folder implements Content {
         Folder folder = (Folder) o;
         return id.equals(folder.id) &&
                 Objects.equals(parentFolder, folder.parentFolder) &&
-                displayName.equals(folder.displayName);
+                name.equals(folder.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, parentFolder, displayName);
+        return Objects.hash(id, parentFolder, name);
     }
 
     @Override
@@ -80,7 +77,7 @@ public class Folder implements Content {
         return "Folder{" +
                 "id=" + id +
                 ", parentFolder=" + parentFolder +
-                ", displayName='" + displayName +
+                ", name='" + name +
                 '}';
     }
 }

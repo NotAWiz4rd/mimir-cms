@@ -1,6 +1,5 @@
 package de.seprojekt.se2019.g4.mimir.content.thumbnail;
 
-import de.seprojekt.se2019.g4.mimir.content.Content;
 import de.seprojekt.se2019.g4.mimir.content.artifact.Artifact;
 import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactService;
 import de.seprojekt.se2019.g4.mimir.content.icon.IconDiscoverService;
@@ -35,20 +34,6 @@ public class ThumbnailController {
     public ThumbnailController(IconDiscoverService iconDiscoverService, ArtifactService artifactService) {
         this.iconDiscoverService = iconDiscoverService;
         this.artifactService = artifactService;
-    }
-
-    /**
-     * This is a helper method for the Thymeleaf engine. In some templates, we have to check, if an artifact
-     * should have an thumbnail or an icon.
-     * @param content
-     * @return
-     */
-    public static String getLinkToSymbolOrThumbnail(Content content) {
-        if (ThumbnailGenerator.supportMimeType(content.getContentType())) {
-            return "/thumbnail/" + content.getId();
-        }
-        String encodedType = content.getContentType().toString().replace("/", "-");
-        return "/icon/" + encodedType;
     }
 
     /**

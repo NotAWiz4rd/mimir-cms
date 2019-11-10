@@ -17,12 +17,12 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
 
     List<Folder> findByParentFolder(Folder parentFolder);
 
-    Optional<Folder> findByParentFolderAndDisplayName(Folder folder, String displayName);
+    Optional<Folder> findByParentFolderAndName(Folder folder, String name);
 
     boolean existsByParentFolder(Folder parentFolder);
 
-    boolean existsByParentFolderAndDisplayName(Folder parentFolder, String displayName);
+    boolean existsByParentFolderAndName(Folder parentFolder, String name);
 
-    boolean existsByDisplayName(String displayName);
+    boolean existsByName(String name);
 
 }
