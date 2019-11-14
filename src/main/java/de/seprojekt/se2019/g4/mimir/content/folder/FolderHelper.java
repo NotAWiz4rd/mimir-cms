@@ -15,15 +15,15 @@ public class FolderHelper extends Folder {
         this.setParentFolder(folder.getParentFolder());
     }
 
-    private List<Folder> folders;
+    private List<FolderHelper> folders;
 
     private List<Artifact> artifacts;
 
-    public List<Folder> getFolders() {
+    public List<FolderHelper> getFolders() {
         return folders;
     }
 
-    public void setFolders(List<Folder> folders) {
+    public void setFolders(List<FolderHelper> folders) {
         this.folders = folders;
     }
 

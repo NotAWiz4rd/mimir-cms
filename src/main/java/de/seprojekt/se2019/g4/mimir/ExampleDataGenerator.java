@@ -3,6 +3,8 @@ package de.seprojekt.se2019.g4.mimir;
 import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactService;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
+import de.seprojekt.se2019.g4.mimir.content.space.Space;
+import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -26,11 +28,13 @@ public class ExampleDataGenerator implements CommandLineRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExampleDataGenerator.class);
     private ArtifactService artifactService;
     private FolderService folderService;
+    private SpaceService spaceService;
     private Principal principal;
 
-    public ExampleDataGenerator(ArtifactService artifactService, FolderService folderService) {
+    public ExampleDataGenerator(ArtifactService artifactService, FolderService folderService, SpaceService spaceService) {
         this.artifactService = artifactService;
         this.folderService = folderService;
+        this.spaceService = spaceService;
         this.principal = () -> "GENERATOR-USER";
     }
 
@@ -42,9 +46,10 @@ public class ExampleDataGenerator implements CommandLineRunner {
      */
     @Override
     public void run(String... args) throws Exception {
-        Folder root = folderService.create(null, "root");
+        Folder root = folderService.create(null, "root-first");
+        Space space = spaceService.create("First Space", root, principal);
 
-        Folder task = folderService.create(folderService.findByParentFolderAndDisplayName(null, "root").get(), "Aufgabe 📬");
+        Folder task = folderService.create(folderService.findByParentFolderAndDisplayName(null, "root-first").get(), "Aufgabe 📬");
 
         uploadFile(root, "Innenhof", MediaType.IMAGE_JPEG, "example_data/innenhof.jpg");
         uploadFile(task, "SE-Projekt Aufgabe", MediaType.TEXT_HTML, "example_data/aufgabenstellung.html");

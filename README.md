@@ -1,8 +1,9 @@
-Rest-Schnittstelle wurde implementiert:
+Rest-Schnittstelle:
 
-    /folder/root -> liefert alle Root-Folder (parentFolder ist null), initial wird ein Root-Folder erstellt
-    /folder/{id} -> liefert den Content (Artifacts / Folder) des Folders mit der angegebenen ID
+    /spaces -> liefert alle Spaces
+    /space/{id} -> liefert Space nach Frontend Muster
+    /folder/{id} -> liefert nur den Folder zurück
     /artifact/{id} -> liefert nur das Artifact zurück
     /artifact/{id}?download -> startet den Download des Artifacts
 
-Außerdem können Folder und Artifacts über POST-Request (siehe Code) vom "ROOT-USER" erstellt und über DELETE-Requests gelöscht werden.
+Außerdem können Spaces, Folder und Artifacts über POST-Request (siehe Code) vom "ROOT-USER" erstellt und über DELETE-Requests gelöscht werden.

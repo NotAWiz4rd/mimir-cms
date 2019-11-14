@@ -38,31 +38,18 @@ public class FolderController {
     }
 
     /**
-     * The user can get a list of all root folders using this interface.
-     *
-     * @return
-     */
-    @GetMapping(value = "/folder/root")
-    public ResponseEntity<List<Folder>> getRootFolder() {
-        return ResponseEntity.ok().body(folderService.findRootFolder());
-    }
-
-    /**
-     * The user can get the content of a folder by calling this interface.
+     * The user can get a folder by calling this interface.
      *
      * @param id
      * @return
      */
     @GetMapping(value = "/folder/{id}")
-    public ResponseEntity<FolderHelper> getFolderContent(@PathVariable long id) {
+    public ResponseEntity<Folder> getFolderContent(@PathVariable long id) {
         Optional<Folder> folder = folderService.findById(id);
         if (!folder.isPresent()) {
             return ResponseEntity.notFound().build();
         }
-        FolderHelper folderHelper = new FolderHelper(folder.get());
-        folderHelper.setFolders(folderService.findByParentFolder(folder.get()));
-        folderHelper.setArtifacts(artifactService.findByParentFolder(folder.get()));
-        return ResponseEntity.ok().body(folderHelper);
+        return ResponseEntity.ok().body(folder.get());
     }
 
     /**
@@ -84,7 +71,6 @@ public class FolderController {
         if (parentFolder.isPresent() && folderService.exists(parentFolder.get(), name)) {
             return ResponseEntity.status(409).build();
         }
-        folderService.create(parentFolder.get(), name);
         return ResponseEntity.ok().body(folderService.create(parentFolder.get(), name));
     }
 
