@@ -46,10 +46,10 @@ public class ExampleDataGenerator implements CommandLineRunner {
      */
     @Override
     public void run(String... args) throws Exception {
-        Folder root = folderService.create(null, "root-first");
-        Space space = spaceService.create("First Space", root, principal);
+        Folder root = folderService.create(null, "space-1");
+        Space space = spaceService.create("space-1", root, principal);
 
-        Folder task = folderService.create(folderService.findByParentFolderAndDisplayName(null, "root-first").get(), "Aufgabe 📬");
+        Folder task = folderService.create(folderService.findByParentFolderAndDisplayName(null, "space-1").get(), "Aufgabe 📬");
 
         uploadFile(root, "Innenhof", MediaType.IMAGE_JPEG, "example_data/innenhof.jpg");
         uploadFile(task, "SE-Projekt Aufgabe", MediaType.TEXT_HTML, "example_data/aufgabenstellung.html");
