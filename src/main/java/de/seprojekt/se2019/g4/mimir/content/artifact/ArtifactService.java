@@ -71,6 +71,16 @@ public class ArtifactService {
     }
 
     /**
+     * Check if an artifact with the given parent folder exists
+     *
+     * @param parentFolder
+     * @return
+     */
+    public boolean existsByParentFolder(Folder parentFolder) {
+        return artifactRepository.existsByParentFolder(parentFolder);
+    }
+
+    /**
      * Return the artifact with the given id.
      *
      * @param id
