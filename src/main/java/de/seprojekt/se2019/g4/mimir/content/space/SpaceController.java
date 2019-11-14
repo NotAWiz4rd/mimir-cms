@@ -41,13 +41,14 @@ public class SpaceController {
     }
 
     /**
-     * The user can get the content of a folder by calling this interface.
+     * The user can get space helper instance of the space with the provided id by calling this interface.
+     * This instance contains the entire content tree of the space.
      *
      * @param id
      * @return
      */
     @GetMapping(value = "/space/{id}")
-    public ResponseEntity<SpaceHelper> getFolderContent(@PathVariable long id) {
+    public ResponseEntity<SpaceHelper> getSpace(@PathVariable long id) {
         Optional<Space> space = spaceService.findById(id);
         if (!space.isPresent()) {
             return ResponseEntity.notFound().build();
@@ -69,7 +70,7 @@ public class SpaceController {
         if (StringUtils.isEmpty(name)) {
             return ResponseEntity.badRequest().build();
         }
-        Folder rootFolder = folderService.create(null, "root-" + name);
+        Folder rootFolder = folderService.create(null, name);
         return ResponseEntity.ok().body(spaceService.create(name, rootFolder, principal));
     }
 
