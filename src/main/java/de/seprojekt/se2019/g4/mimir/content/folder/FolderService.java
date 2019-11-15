@@ -1,7 +1,5 @@
 package de.seprojekt.se2019.g4.mimir.content.folder;
 
-import de.seprojekt.se2019.g4.mimir.content.artifact.Artifact;
-import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactRepository;
 import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * This service offers helper methods for dealing with folders.
@@ -26,7 +23,7 @@ public class FolderService {
      * The parameters will be autowired by Spring.
      *
      * @param folderRepository
-     * @param artifactRepository
+     * @param artifactService
      */
     public FolderService(FolderRepository folderRepository, ArtifactService artifactService) {
         this.folderRepository = folderRepository;
@@ -96,16 +93,16 @@ public class FolderService {
     }
 
     /**
-     * Returns a folder helper that contains the folder tree
+     * Returns a folder DTO that contains the folder tree
      *
      * @param folder
      * @return
      */
-    public FolderHelper getFolderHelperWithTree(Folder folder) {
-        FolderHelper folderHelper = new FolderHelper(folder);
-        folderHelper.setFolders(this.getFolderTree(folder));
-        folderHelper.setArtifacts(artifactService.findByParentFolder(folder));
-        return folderHelper;
+    public FolderDTO getFolderDTOWithTree(Folder folder) {
+        FolderDTO folderDTO = new FolderDTO(folder);
+        folderDTO.setFolders(this.getFolderTree(folder));
+        folderDTO.setArtifacts(artifactService.findByParentFolder(folder));
+        return folderDTO;
     }
 
     /**
@@ -113,21 +110,21 @@ public class FolderService {
      * @param folder
      * @return
      */
-    public List<FolderHelper> getFolderTree(Folder folder) {
+    public List<FolderDTO> getFolderTree(Folder folder) {
         List<Folder> childFolders = folderRepository.findByParentFolder(folder);
-        List<FolderHelper> folderHelpers = new LinkedList<>();
+        List<FolderDTO> folderDTOs = new LinkedList<>();
         if (childFolders.size() == 0) {
-            FolderHelper fh = new FolderHelper(folder);
-            fh.setArtifacts(this.artifactService.findByParentFolder(folder));
-            return folderHelpers;
+            FolderDTO folderDTO = new FolderDTO(folder);
+            folderDTO.setArtifacts(this.artifactService.findByParentFolder(folder));
+            return folderDTOs;
         } else {
             childFolders.forEach(f -> {
-                FolderHelper fh = new FolderHelper(f);
-                fh.setFolders(this.getFolderTree(f));
-                fh.setArtifacts(this.artifactService.findByParentFolder(f));
-                folderHelpers.add(fh);
+                FolderDTO folderDTO = new FolderDTO(f);
+                folderDTO.setFolders(this.getFolderTree(f));
+                folderDTO.setArtifacts(this.artifactService.findByParentFolder(f));
+                folderDTOs.add(folderDTO);
             });
-            return folderHelpers;
+            return folderDTOs;
         }
     }
 

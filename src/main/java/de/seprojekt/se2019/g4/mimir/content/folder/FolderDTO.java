@@ -5,25 +5,25 @@ import de.seprojekt.se2019.g4.mimir.content.artifact.Artifact;
 import java.util.List;
 
 /**
- * This class wraps the folder class to add the list of child folders and child artifacts
+ * This class acts as a data transfer object for folders to add the list of child folders and child artifacts
  */
-public class FolderHelper extends Folder {
+public class FolderDTO extends Folder {
 
-    public FolderHelper(Folder folder) {
+    public FolderDTO(Folder folder) {
         this.setId(folder.getId());
         this.setName(folder.getName());
         this.setParentFolder(folder.getParentFolder());
     }
 
-    private List<FolderHelper> folders;
+    private List<FolderDTO> folders;
 
     private List<Artifact> artifacts;
 
-    public List<FolderHelper> getFolders() {
+    public List<FolderDTO> getFolders() {
         return folders;
     }
 
-    public void setFolders(List<FolderHelper> folders) {
+    public void setFolders(List<FolderDTO> folders) {
         this.folders = folders;
     }
 
