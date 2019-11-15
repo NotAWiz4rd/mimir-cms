@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.persistence.EntityNotFoundException;
 import java.io.InputStream;
+import java.util.Optional;
 
 /**
  * This controller will offer an HTTP interface for the security page to load thumbnails.
@@ -45,10 +46,13 @@ public class ThumbnailController {
     @GetMapping(value = "/thumbnail/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     @ResponseBody
     public ResponseEntity getThumbnail(@PathVariable Long id) {
-        Artifact artifact = artifactService.findById(id).orElseThrow(EntityNotFoundException::new);
-        return artifactService.findThumbnail(artifact)
-                .map(thumbnailInputStream -> returnRealThumbnail(thumbnailInputStream, artifact))
-                .orElseGet(() -> fallbackToIcon(artifact.getContentType()));
+        Optional<Artifact> artifact = artifactService.findById(id);
+        if(artifact.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return artifactService.findThumbnail(artifact.get())
+                .map(thumbnailInputStream -> returnRealThumbnail(thumbnailInputStream, artifact.get()))
+                .orElseGet(() -> fallbackToIcon(artifact.get().getContentType()));
     }
 
     /**

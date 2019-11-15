@@ -41,7 +41,7 @@ public class Artifact {
 
     @JsonIgnore
     @Lob
-    private byte[] data;
+    private byte[] content;
 
     @Column(length = 512)
     private MediaType contentType;
@@ -120,12 +120,12 @@ public class Artifact {
         this.creationDate = creationDate;
     }
 
-    public byte[] getData() {
-        return data;
+    public byte[] getContent() {
+        return content;
     }
 
-    public void setData(byte[] data) {
-        this.data = data;
+    public void setContent(byte[] content) {
+        this.content = content;
     }
 
     @Override
