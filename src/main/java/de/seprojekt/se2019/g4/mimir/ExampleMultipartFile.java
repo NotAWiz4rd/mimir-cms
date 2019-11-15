@@ -47,7 +47,12 @@ public class ExampleMultipartFile implements MultipartFile {
 
     @Override
     public long getSize() {
-        throw new UnsupportedOperationException();
+        try {
+            return classPathResource.getInputStream().readAllBytes().length;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     @Override
