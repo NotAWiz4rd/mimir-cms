@@ -3,14 +3,11 @@ package de.seprojekt.se2019.g4.mimir.content.artifact;
 import com.fasterxml.jackson.annotation.*;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.Thumbnail;
-import org.springframework.content.commons.annotations.ContentId;
-import org.springframework.content.commons.annotations.ContentLength;
 import org.springframework.http.MediaType;
 
 import javax.persistence.*;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.UUID;
 
 /**
  * This class defines how the table artifact should look like (which columns, which primary/foreign keys etc.)
@@ -39,15 +36,12 @@ public class Artifact {
     @Column
     private Instant creationDate;
 
-    @ContentId
     @Column
-    @JsonIgnore
-    private UUID contentId;
-
-    @ContentLength
-    @Column
-
     private Long contentLength;
+
+    @JsonIgnore
+    @Lob
+    private byte[] data;
 
     @Column(length = 512)
     private MediaType contentType;
@@ -94,14 +88,6 @@ public class Artifact {
         this.author = author;
     }
 
-    public UUID getContentId() {
-        return contentId;
-    }
-
-    public void setContentId(UUID contentId) {
-        this.contentId = contentId;
-    }
-
     public Long getContentLength() {
         return contentLength;
     }
@@ -134,6 +120,14 @@ public class Artifact {
         this.creationDate = creationDate;
     }
 
+    public byte[] getData() {
+        return data;
+    }
+
+    public void setData(byte[] data) {
+        this.data = data;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -144,7 +138,6 @@ public class Artifact {
                 name.equals(artifact.name) &&
                 author.equals(artifact.author) &&
                 creationDate.equals(artifact.creationDate) &&
-                contentId.equals(artifact.contentId) &&
                 contentLength.equals(artifact.contentLength) &&
                 contentType.equals(artifact.contentType) &&
                 thumbnail.equals(artifact.thumbnail);
@@ -152,7 +145,7 @@ public class Artifact {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, parentFolder, name, author, creationDate, contentId, contentLength, contentType, thumbnail);
+        return Objects.hash(id, parentFolder, name, author, creationDate, contentLength, contentType, thumbnail);
     }
 
     @Override
@@ -163,11 +156,11 @@ public class Artifact {
                 ", name='" + name + '\'' +
                 ", author='" + author + '\'' +
                 ", creationDate=" + creationDate +
-                ", contentId=" + contentId +
                 ", contentLength=" + contentLength +
                 ", contentType=" + contentType +
                 ", thumbnail=" + thumbnail +
                 '}';
     }
+
 
 }

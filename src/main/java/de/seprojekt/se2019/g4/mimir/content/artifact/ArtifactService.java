@@ -15,8 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
@@ -32,7 +31,6 @@ public class ArtifactService {
     private static long ONE_MB = ONE_KB * ONE_KB;
     private static long ONE_GB = ONE_KB * ONE_MB;
     private ArtifactRepository artifactRepository;
-    private ArtifactContentStore artifactContentStore;
     private ThumbnailContentStore thumbnailContentStore;
     private ThumbnailGenerator thumbnailGenerator;
 
@@ -40,13 +38,11 @@ public class ArtifactService {
      * The parameters will be autowired by Spring.
      *
      * @param artifactRepository
-     * @param artifactContentStore
      * @param thumbnailContentStore
      * @param thumbnailGenerator
      */
-    public ArtifactService(ArtifactRepository artifactRepository, ArtifactContentStore artifactContentStore, ThumbnailContentStore thumbnailContentStore, ThumbnailGenerator thumbnailGenerator) {
+    public ArtifactService(ArtifactRepository artifactRepository, ThumbnailContentStore thumbnailContentStore, ThumbnailGenerator thumbnailGenerator) {
         this.artifactRepository = artifactRepository;
-        this.artifactContentStore = artifactContentStore;
         this.thumbnailContentStore = thumbnailContentStore;
         this.thumbnailGenerator = thumbnailGenerator;
     }
@@ -97,7 +93,7 @@ public class ArtifactService {
      * @return
      */
     public InputStream findArtifactContent(Artifact artifact) {
-        return artifactContentStore.getContent(artifact);
+        return new ByteArrayInputStream(artifact.getData());
     }
 
     /**
@@ -136,30 +132,32 @@ public class ArtifactService {
      */
     @Transactional
     public Artifact upload(String displayName, MultipartFile file, Folder parentFolder, Principal principal) throws IOException {
+        // TODO CHANGE AFTER USER MANAGEMENT IMPLEMENTATION
+        principal = () -> "ROOT-USER";
+
         Artifact artifact = new Artifact();
         artifact.setName(displayName);
         artifact.setParentFolder(parentFolder);
         artifact.setCreationDate(Instant.now());
 
-        // TODO CHANGE AFTER USER MANAGEMENT IMPLEMENTATION
-        principal = () -> "ROOT-USER";
-
         // force deletion of the file and thumbnail by unsetting and saving them
-        artifactContentStore.unsetContent(artifact);
         thumbnailContentStore.unsetContent(artifact.getThumbnail());
         artifactRepository.save(artifact);
 
         // update metadata of artifact
         MediaType contentType = MediaType.valueOf(file.getContentType());
         artifact.setContentType(contentType);
-        try (InputStream inputStream = file.getInputStream()) {
-            artifactContentStore.setContent(artifact, inputStream);
-        }
         artifact.setAuthor(principal.getName());
+
+        // safe artifact binary data
+        try (InputStream inputStream = file.getInputStream()) {
+            artifact.setContentLength(file.getSize());
+            artifact.setData(inputStream.readAllBytes());
+        }
         Artifact updatedArtifact = artifactRepository.save(artifact);
 
         // generate thumbnail (beware - InputStreams are one-time-use only)
-        try (InputStream storedContent = artifactContentStore.getContent(artifact)) {
+        try (InputStream storedContent = new ByteArrayInputStream(artifact.getData())) {
             Optional<InputStream> possibleThumbnail = thumbnailGenerator.generateThumbnail(storedContent, artifact.getContentType());
             if (possibleThumbnail.isEmpty()) {
                 return updatedArtifact;
@@ -178,7 +176,6 @@ public class ArtifactService {
      */
     @Transactional
     public void delete(Artifact artifact) {
-        artifactContentStore.unsetContent(artifact);
         thumbnailContentStore.unsetContent(artifact.getThumbnail());
         // only after a repository.save(), contentStore.unsetContent() will delete the file -
         // repository.delete() won't trigger the deletion
