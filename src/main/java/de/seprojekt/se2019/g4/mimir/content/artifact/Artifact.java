@@ -41,6 +41,7 @@ public class Artifact {
 
     @JsonIgnore
     @Lob
+    @Basic(fetch = FetchType.LAZY)
     private byte[] content;
 
     @Column(length = 512)

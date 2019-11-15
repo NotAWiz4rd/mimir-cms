@@ -14,6 +14,7 @@ public class Thumbnail {
     private Long id;
 
     @Lob
+    @Basic(fetch = FetchType.LAZY)
     private byte[] content;
 
     @Column
