@@ -51,7 +51,7 @@ public class SpaceService {
      * Return new space
      *
      * @param name
-     * @parm rootFolder
+     * @param rootFolder
      * @param principal owner
      * @return
      */

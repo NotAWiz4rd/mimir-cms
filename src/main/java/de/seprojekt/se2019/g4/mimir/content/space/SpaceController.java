@@ -41,21 +41,21 @@ public class SpaceController {
     }
 
     /**
-     * The user can get space helper instance of the space with the provided id by calling this interface.
+     * The user can get space DTO instance of the space with the provided id by calling this interface.
      * This instance contains the entire content tree of the space.
      *
      * @param id
      * @return
      */
     @GetMapping(value = "/space/{id}")
-    public ResponseEntity<SpaceHelper> getSpace(@PathVariable long id) {
+    public ResponseEntity<SpaceDTO> getSpace(@PathVariable long id) {
         Optional<Space> space = spaceService.findById(id);
         if (!space.isPresent()) {
             return ResponseEntity.notFound().build();
         }
-        SpaceHelper spaceHelper = new SpaceHelper(space.get());
-        spaceHelper.setRoot(folderService.getFolderHelperWithTree(space.get().getRootFolder()));
-        return ResponseEntity.ok().body(spaceHelper);
+        SpaceDTO spaceDTO = new SpaceDTO(space.get());
+        spaceDTO.setRoot(folderService.getFolderDTOWithTree(space.get().getRootFolder()));
+        return ResponseEntity.ok().body(spaceDTO);
     }
 
     /**
