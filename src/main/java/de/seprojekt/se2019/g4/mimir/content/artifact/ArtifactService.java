@@ -1,10 +1,9 @@
 package de.seprojekt.se2019.g4.mimir.content.artifact;
 
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
-import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.Thumbnail;
-import de.seprojekt.se2019.g4.mimir.content.thumbnail.ThumbnailContentStore;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.ThumbnailGenerator;
+import de.seprojekt.se2019.g4.mimir.content.thumbnail.ThumbnailRepository;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.mime.MimeTypeException;
@@ -15,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
@@ -26,34 +27,26 @@ import java.util.Optional;
  */
 @Service
 public class ArtifactService {
+
     private final static Logger LOGGER = LoggerFactory.getLogger(ArtifactService.class);
     private static long ONE_KB = 1000;
     private static long ONE_MB = ONE_KB * ONE_KB;
     private static long ONE_GB = ONE_KB * ONE_MB;
+
     private ArtifactRepository artifactRepository;
-    private ThumbnailContentStore thumbnailContentStore;
     private ThumbnailGenerator thumbnailGenerator;
+    private ThumbnailRepository thumbnailRepository;
 
     /**
      * The parameters will be autowired by Spring.
      *
      * @param artifactRepository
-     * @param thumbnailContentStore
      * @param thumbnailGenerator
      */
-    public ArtifactService(ArtifactRepository artifactRepository, ThumbnailContentStore thumbnailContentStore, ThumbnailGenerator thumbnailGenerator) {
+    public ArtifactService(ArtifactRepository artifactRepository, ThumbnailRepository thumbnailRepository, ThumbnailGenerator thumbnailGenerator) {
         this.artifactRepository = artifactRepository;
-        this.thumbnailContentStore = thumbnailContentStore;
+        this.thumbnailRepository = thumbnailRepository;
         this.thumbnailGenerator = thumbnailGenerator;
-    }
-
-    /**
-     * Return all artifacts
-     *
-     * @return
-     */
-    public List<Artifact> findAll() {
-        return artifactRepository.findAll();
     }
 
     /**
@@ -93,7 +86,7 @@ public class ArtifactService {
      * @return
      */
     public InputStream findArtifactContent(Artifact artifact) {
-        return new ByteArrayInputStream(artifact.getData());
+        return new ByteArrayInputStream(artifact.getContent());
     }
 
     /**
@@ -104,8 +97,7 @@ public class ArtifactService {
      */
     public Optional<InputStream> findThumbnail(Artifact artifact) {
         Thumbnail thumbnail = artifact.getThumbnail();
-        InputStream inputStream = thumbnailContentStore.getContent(thumbnail);
-        return Optional.ofNullable(inputStream);
+        return thumbnail.getContentLength() == null ? Optional.empty() : Optional.of(new ByteArrayInputStream(thumbnail.getContent()));
     }
 
     /**
@@ -121,7 +113,6 @@ public class ArtifactService {
 
     /**
      * Create a new artifact with a file.
-     *
      *
      * @param displayName
      * @param file
@@ -140,30 +131,30 @@ public class ArtifactService {
         artifact.setParentFolder(parentFolder);
         artifact.setCreationDate(Instant.now());
 
-        // force deletion of the file and thumbnail by unsetting and saving them
-        thumbnailContentStore.unsetContent(artifact.getThumbnail());
-        artifactRepository.save(artifact);
-
         // update metadata of artifact
         MediaType contentType = MediaType.valueOf(file.getContentType());
         artifact.setContentType(contentType);
         artifact.setAuthor(principal.getName());
 
-        // safe artifact binary data
+        // save artifact binary data
         try (InputStream inputStream = file.getInputStream()) {
             artifact.setContentLength(file.getSize());
-            artifact.setData(inputStream.readAllBytes());
+            artifact.setContent(inputStream.readAllBytes());
         }
         Artifact updatedArtifact = artifactRepository.save(artifact);
 
         // generate thumbnail (beware - InputStreams are one-time-use only)
-        try (InputStream storedContent = new ByteArrayInputStream(artifact.getData())) {
+        try (InputStream storedContent = new ByteArrayInputStream(artifact.getContent())) {
             Optional<InputStream> possibleThumbnail = thumbnailGenerator.generateThumbnail(storedContent, artifact.getContentType());
             if (possibleThumbnail.isEmpty()) {
                 return updatedArtifact;
             }
-            try (InputStream thumbnail = possibleThumbnail.get()) {
-                thumbnailContentStore.setContent(artifact.getThumbnail(), thumbnail);
+            try (InputStream thumbnailStream = possibleThumbnail.get()) {
+                Thumbnail thumbnail = artifact.getThumbnail();
+                byte[] thumbnailContent = thumbnailStream.readAllBytes();
+                thumbnail.setContent(thumbnailContent);
+                thumbnail.setContentLength((long) thumbnailContent.length);
+                thumbnailRepository.save(thumbnail);
                 return artifactRepository.save(artifact);
             }
         }
@@ -171,18 +162,15 @@ public class ArtifactService {
 
     /**
      * Deletes the artifacts with its file and thumbnail.
-     *      *
+     * *
+     *
      * @param artifact
      */
     @Transactional
     public void delete(Artifact artifact) {
-        thumbnailContentStore.unsetContent(artifact.getThumbnail());
-        // only after a repository.save(), contentStore.unsetContent() will delete the file -
-        // repository.delete() won't trigger the deletion
-        artifactRepository.save(artifact);
+        thumbnailRepository.delete(artifact.getThumbnail());
         artifactRepository.delete(artifact);
     }
-
 
     public String byteCountToDisplaySize(Artifact artifact) {
         String displaySize;
