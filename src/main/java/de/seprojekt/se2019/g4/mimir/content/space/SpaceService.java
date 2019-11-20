@@ -56,6 +56,9 @@ public class SpaceService {
      * @return
      */
     public Space create(String name, Folder rootFolder, Principal principal) {
+        // TODO CHANGE AFTER USER MANAGEMENT IMPLEMENTATION
+        principal = () -> "ROOT-USER";
+
         Space space = new Space();
         space.setName(name);
         space.setRootFolder(rootFolder);
