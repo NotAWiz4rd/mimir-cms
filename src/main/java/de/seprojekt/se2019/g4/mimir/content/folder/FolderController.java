@@ -1,6 +1,7 @@
 package de.seprojekt.se2019.g4.mimir.content.folder;
 
 import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactService;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,10 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * This controller offers an HTTP interface for manipulating folders (e.g. deleting, creating etc.)
@@ -44,12 +46,13 @@ public class FolderController {
      * @return
      */
     @GetMapping(value = "/folder/{id}")
-    public ResponseEntity<Folder> getFolderContent(@PathVariable long id) {
+    public ResponseEntity<FolderDTO> getFolderContent(@PathVariable long id) {
         Optional<Folder> folder = folderService.findById(id);
-        if (!folder.isPresent()) {
+        if (folder.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok().body(folder.get());
+        FolderDTO folderDTO = folderService.getFolderDTOWithTree(folder.get());
+        return ResponseEntity.ok().body(folderDTO);
     }
 
     /**
