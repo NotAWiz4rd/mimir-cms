@@ -1,14 +1,20 @@
 package de.seprojekt.se2019.g4.mimir.content.folder;
 
+import de.seprojekt.se2019.g4.mimir.content.artifact.Artifact;
 import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * This service offers helper methods for dealing with folders.
@@ -107,6 +113,7 @@ public class FolderService {
 
     /**
      * Recursive method to create a tree of folders
+     *
      * @param folder
      * @return
      */
@@ -125,6 +132,79 @@ public class FolderService {
                 folderDTOs.add(folderDTO);
             });
             return folderDTOs;
+        }
+    }
+
+    /**
+     * ZIPs a folder and its content
+     * https://www.baeldung.com/java-compress-and-uncompress
+     *
+     * @param folder
+     * @throws IOException
+     */
+    public ByteArrayInputStream zip(Folder folder) throws IOException {
+        // create ZipOutputStream
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ZipOutputStream zipOutputStream = new ZipOutputStream(bos);
+
+        // add root folder
+        zipOutputStream.putNextEntry(new ZipEntry(folder.getName() + "/"));
+        zipOutputStream.closeEntry();
+
+        // add artifacts of root folder
+        this.zipFolderArtifacts(folder, folder.getName(), zipOutputStream);
+
+        // recursively add all children folders with artifacts
+        for (Folder childFolder : folderRepository.findByParentFolder(folder)) {
+            this.zipFolder(childFolder, folder.getName() + "/" + childFolder.getName(), zipOutputStream);
+        }
+
+        zipOutputStream.close();
+        return new ByteArrayInputStream(bos.toByteArray());
+    }
+
+    /**
+     * Recursive method to zip folders
+     *
+     * @param folder
+     * @param path
+     * @param zipOutputStream
+     * @throws IOException
+     */
+    private void zipFolder(Folder folder, String path, ZipOutputStream zipOutputStream) throws IOException {
+        List<Folder> childFolders = folderRepository.findByParentFolder(folder);
+
+        // if no further childFolders exist, then end recursion
+        if (childFolders.size() == 0) {
+            zipOutputStream.putNextEntry(new ZipEntry(path + "/"));
+            zipOutputStream.closeEntry();
+            this.zipFolderArtifacts(folder, path, zipOutputStream);
+            return;
+        }
+
+        // otherwise zip childFolders and their artifacts as well
+        zipOutputStream.putNextEntry(new ZipEntry(path + "/"));
+        zipOutputStream.closeEntry();
+        this.zipFolderArtifacts(folder, path, zipOutputStream);
+        for (Folder childFolder : childFolders) {
+            zipFolder(childFolder, path + "/" + childFolder.getName(), zipOutputStream);
+        }
+        return;
+    }
+
+    /**
+     * ZIPs artifacts of a specific folder
+     *
+     * @param folder
+     * @param path
+     * @param zipOutputStream
+     * @throws IOException
+     */
+    private void zipFolderArtifacts(Folder folder, String path, ZipOutputStream zipOutputStream) throws IOException {
+        for (Artifact childArtifact : this.artifactService.findByParentFolder(folder)) {
+            zipOutputStream.putNextEntry(new ZipEntry(path + "/ " + artifactService.calculateFileName(childArtifact)));
+            zipOutputStream.write(childArtifact.getContent());
+            zipOutputStream.closeEntry();
         }
     }
 
