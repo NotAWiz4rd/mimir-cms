@@ -1,3 +1,9 @@
+Entwicklung
+---
+
+    * Server starten: `mvn spring-boot:run -Dserver.port=8080`
+    * Tests starten: `mvn test`
+
 Rest-Schnittstelle:
 
     /spaces -> liefert alle Spaces
