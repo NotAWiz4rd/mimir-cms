@@ -14,3 +14,13 @@ Rest-Schnittstelle:
     /folder/{id}?download -> startet den Download des Folders
 
 Außerdem können Spaces, Folder und Artifacts über POST-Request (siehe Code) vom "ROOT-USER" erstellt und über DELETE-Requests gelöscht werden.
+
+Docker Deployment
+---
+### Starten
+`docker-compose up` oder `docker-compose up -d`
+### Stoppen
+`docker-compose down`
+### Logs
+- `docker-compose logs mimir`
+- `docker-compose logs mail`
