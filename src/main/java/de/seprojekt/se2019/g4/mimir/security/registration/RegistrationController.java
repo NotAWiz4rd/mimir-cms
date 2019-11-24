@@ -21,7 +21,7 @@ public class RegistrationController {
      * @param text
      * @return
      */
-    @GetMapping(value = "/login")
+    @GetMapping(value = "/register")
     public ResponseEntity getArtifact(@RequestParam("receiver") String receiver, @RequestParam("text") String text ) {
         if (StringUtils.isEmpty(receiver)) {
             return ResponseEntity.badRequest().build();

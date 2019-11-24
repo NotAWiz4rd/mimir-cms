@@ -15,7 +15,7 @@ services:
     image: namshi/smtp
     container_name: smtp-mimir
     restart: always
-    ports:
-     - "25:25"
+    expose:
+     - "25"
     environment:
      - MAILNAME=owa.sonia.de
