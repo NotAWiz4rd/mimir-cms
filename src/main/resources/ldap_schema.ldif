@@ -7,7 +7,7 @@ structuralObjectClass: organizationalRole
 entryUUID: dec89578-e03b-1038-83b5-190b61f3b919
 creatorsName: cn=admin,dc=seprojekt,dc=de
 createTimestamp: 20190321154351Z
-userPassword:: e1NTSEF9SWhibFFURlZLaVB0bXo2QUo1dmZXUDNveWUwNk5vZnY=
+userPassword:: YWRtaW4=
 modifiersName: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
 modifyTimestamp: 20190409105926Z
 
@@ -53,8 +53,7 @@ objectClass: inetOrgPerson
 objectClass: organizationalPerson
 objectClass: person
 objectClass: top
-userPassword:: e1NTSEF9dmpzbXpkcHhPYzVLT1BRdjlNN015ZVJ1b2hVeGRnK29FeFlXZ3c9P
- Q==
+userPassword:: amJhcms=
 structuralObjectClass: inetOrgPerson
 entryUUID: 4607ab3e-e352-1038-852e-1953cb4dd1da
 creatorsName: cn=admin,dc=seprojekt,dc=de
@@ -73,8 +72,7 @@ objectClass: inetOrgPerson
 objectClass: organizationalPerson
 objectClass: person
 objectClass: top
-userPassword:: e1NTSEF9c1BUQ28yR2FKVk9sUlNiM3BhSi9nN2JkSkVKaWNrQmY5Wmx0d2c9P
- Q==
+userPassword:: dGhlbGxtYW5u
 structuralObjectClass: inetOrgPerson
 entryUUID: 4a7292a6-e352-1038-852f-1953cb4dd1da
 creatorsName: cn=admin,dc=seprojekt,dc=de
@@ -134,8 +132,7 @@ uid: cms
 objectClass: account
 objectClass: top
 objectClass: simpleSecurityObject
-userPassword:: e1NTSEF9UEhXK3BJN0tzbmdzaW5tanNxV2VpMUZSZ1E4L1JRQXdJeVhNU3c9P
- Q==
+userPassword:: Y21z
 structuralObjectClass: account
 entryUUID: ab8c2dae-e3ed-1038-80a9-8f19c432541c
 creatorsName: cn=admin,dc=seprojekt,dc=de

@@ -1,5 +1,8 @@
 package de.seprojekt.se2019.g4.mimir.security;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
 /**
  * Spring will create a 'singleton' of this class and will map the values of the environment variables like
  * user.authentication.method or user.authentication.ldap.user-search-filter onto this 'singleton'.
@@ -11,8 +14,8 @@ package de.seprojekt.se2019.g4.mimir.security;
  * - underscore notation (for .properties, .yml files): user.authentication.ldap.user_search_filter
  * - upper case format (for system environment variables): USER_AUTHENTICATION_LDAP_USERSEARCHFILTER
  */
-//@Configuration
-//@ConfigurationProperties(prefix = "user.authentication")
+@Configuration
+@ConfigurationProperties(prefix = "user.authentication")
 public class AuthenticationConfiguration {
     //user.authentication.method
     private Method method;
