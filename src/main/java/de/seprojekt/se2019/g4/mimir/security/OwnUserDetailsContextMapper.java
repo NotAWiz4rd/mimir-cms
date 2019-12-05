@@ -1,6 +1,7 @@
 package de.seprojekt.se2019.g4.mimir.security;
 
 import org.springframework.LdapDataEntry;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,7 +18,7 @@ import java.util.Collection;
  * https://stackoverflow.com/a/30983147
  * https://stackoverflow.com/q/37728277
  */
-//@Configuration
+@Configuration
 public class OwnUserDetailsContextMapper extends LdapUserDetailsMapper implements UserDetailsContextMapper {
 
     /**
