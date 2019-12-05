@@ -76,14 +76,18 @@ public class SpaceController {
 
     /**
      * The user can delete a space by calling this interface.
+     *
+     * @param id
+     * @param force
+     * @return
      */
     @DeleteMapping(value = "/space/{id}")
-    public ResponseEntity<String> delete(@PathVariable("id") long id) {
+    public ResponseEntity<String> delete(@PathVariable("id") long id, @RequestParam(value = "force", required = false) String force) {
         Optional<Space> space = spaceService.findById(id);
         if (space.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        if (space.isPresent() && !folderService.isEmpty(space.get().getRootFolder())) {
+        if (space.isPresent() && force == null && !folderService.isEmpty(space.get().getRootFolder())) {
             return ResponseEntity.status(409).body("Space is not empty!");
         }
         spaceService.delete(space.get());

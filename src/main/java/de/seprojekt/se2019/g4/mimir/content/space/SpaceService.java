@@ -1,17 +1,13 @@
 package de.seprojekt.se2019.g4.mimir.content.space;
 
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
-import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SpaceService {
@@ -55,6 +51,7 @@ public class SpaceService {
      * @param principal owner
      * @return
      */
+    @Transactional
     public Space create(String name, Folder rootFolder, Principal principal) {
         // TODO CHANGE AFTER USER MANAGEMENT IMPLEMENTATION
         principal = () -> "ROOT-USER";
@@ -66,9 +63,13 @@ public class SpaceService {
         return spaceRepository.save(space);
     }
 
+    /**
+     * Deletes a space
+     * @param space
+     */
+    @Transactional
     public void delete(Space space) {
-        spaceRepository.delete(space);
+        this.spaceRepository.delete(space);
     }
-
 
 }
