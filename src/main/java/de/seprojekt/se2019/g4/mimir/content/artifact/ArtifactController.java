@@ -1,6 +1,7 @@
 package de.seprojekt.se2019.g4.mimir.content.artifact;
 
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
+import de.seprojekt.se2019.g4.mimir.content.folder.FolderDTO;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,6 +108,27 @@ public class ArtifactController {
             return ResponseEntity.status(409).build();
         }
         return ResponseEntity.ok().body(artifactService.upload(name, file, parentFolder.get(), principal));
+    }
+
+    /**
+     * The user can rename an artifact by calling this interface
+     *
+     * @param id
+     * @param name
+     * @return
+     */
+    @PutMapping(value = "/artifact/{id}")
+    public ResponseEntity<Artifact> renameArtifact(@PathVariable long id, @RequestParam("name") String name) {
+        Optional<Artifact> artifactOptional = artifactService.findById(id);
+        if (artifactOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        if (StringUtils.isEmpty(name)) {
+            return ResponseEntity.badRequest().build();
+        }
+        Artifact artifact = artifactOptional.get();
+        artifact.setName(name);
+        return ResponseEntity.ok().body(artifactService.update(artifact));
     }
 
     /**

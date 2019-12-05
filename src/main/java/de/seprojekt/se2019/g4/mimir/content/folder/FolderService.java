@@ -80,7 +80,17 @@ public class FolderService {
         folder.setName(name);
         folder.setParentFolder(parentFolder);
         return folderRepository.save(folder);
+    }
 
+    /**
+     * Update a folder
+     *
+     * @param folder
+     * @return
+     */
+    @Transactional
+    public Folder update(Folder folder) {
+        return folderRepository.save(folder);
     }
 
     /**
@@ -219,9 +229,20 @@ public class FolderService {
         return !(artifactService.existsByParentFolder(folder) || folderRepository.existsByParentFolder(folder));
     }
 
-
+    /**
+     * Deletes a folder, its sub-folders and all artifacts
+     *
+     * @param folder
+     */
     @Transactional
     public void delete(Folder folder) {
+        List<Folder> childFolders = folderRepository.findByParentFolder(folder);
+        for (Folder f: childFolders){
+          this.delete(f);
+        }
+        for (Artifact artifact : artifactService.findByParentFolder(folder)) {
+          artifactService.delete(artifact);
+        }
         folderRepository.delete(folder);
     }
 }

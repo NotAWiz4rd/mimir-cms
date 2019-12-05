@@ -112,6 +112,17 @@ public class ArtifactService {
     }
 
     /**
+     * Update an artifact
+     *
+     * @param artifact
+     * @return
+     */
+    @Transactional
+    public Artifact update(Artifact artifact) {
+        return artifactRepository.save(artifact);
+    }
+
+    /**
      * Create a new artifact with a file.
      *
      * @param displayName
