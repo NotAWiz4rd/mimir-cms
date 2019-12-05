@@ -51,7 +51,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/favicon.ico").permitAll()
                 .anyRequest().authenticated();
 
-        //allow iframes
+        http.cors(); // https://www.baeldung.com/spring-security-cors-preflight
+        // allow iframes
         http.headers().frameOptions().sameOrigin();
     }
 
