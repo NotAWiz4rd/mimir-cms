@@ -106,18 +106,51 @@ public class FolderController {
     }
 
     /**
+     * The user can rename a folder by calling this interface
+     *
+     * @param id
+     * @param name
+     * @return
+     */
+    @PutMapping(value = "/folder/{id}")
+    public ResponseEntity<FolderDTO> renameFolder(@PathVariable long id, @RequestParam("name") String name) {
+        Optional<Folder> folderOptional = folderService.findById(id);
+        if (folderOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        if (StringUtils.isEmpty(name)) {
+            return ResponseEntity.badRequest().build();
+        }
+        Folder folder = folderOptional.get();
+        folder.setName(name);
+        folder = folderService.update(folder);
+        FolderDTO folderDTO = folderService.getFolderDTOWithTree(folder);
+        return ResponseEntity.ok().body(folderDTO);
+    }
+
+    /**
      * The user can delete a folder by calling this interface.
+     *
+     * @param id
+     * @param force
+     * @return
      */
     @DeleteMapping(value = "/folder/{id}")
-    public ResponseEntity<String> delete(@PathVariable("id") long id) {
+    public ResponseEntity<String> delete(@PathVariable("id") long id, @RequestParam(value = "force", required = false) String force) {
         Optional<Folder> folder = folderService.findById(id);
         if (folder.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        if (folder.isPresent() && !folderService.isEmpty(folder.get())) {
-            return ResponseEntity.status(409).body("Folder is not empty!");
+        if (folder.isPresent()) {
+            if (force == null && !folderService.isEmpty(folder.get())) {
+                return ResponseEntity.status(409).body("Folder is not empty!");
+            }
+            if (force != null && folder.get().getParentFolder() == null) {
+                return ResponseEntity.status(409).body("Folder is a root folder. Delete the space instead!");
+            }
         }
         folderService.delete(folder.get());
         return ResponseEntity.ok().build();
     }
+
 }
