@@ -1,14 +1,14 @@
 package de.seprojekt.se2019.g4.mimir.security;
 
-import javax.servlet.FilterChain;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.servlet.FilterChain;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
@@ -16,7 +16,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private JwtTokenProvider jwtTokenProvider;
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager,
-        ApplicationContext ctx) {
+                                   ApplicationContext ctx) {
         this.authenticationManager = authenticationManager;
         setFilterProcessesUrl("/login");
         this.jwtTokenProvider = ctx.getBean(JwtTokenProvider.class);

@@ -1,19 +1,18 @@
 package de.seprojekt.se2019.g4.mimir.security;
 
-import java.security.Key;
-import java.util.Date;
-
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.security.Keys;
+import java.security.Key;
+import java.util.Date;
 
 @Component
 public class JwtTokenProvider {
@@ -28,22 +27,22 @@ public class JwtTokenProvider {
     public String generateToken(Authentication auth) {
         var user = ((OwnUserDetails) auth.getPrincipal());
         return Jwts.builder()
-            .signWith(key())
-            .setSubject(user.getUsername())
-            .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-            .compact();
+                .signWith(key())
+                .setSubject(user.getUsername())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .compact();
     }
 
     private Key key() {
-      return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
     public boolean validateToken(String token) {
-      try {
-          Jwts.parser()
-            .setSigningKey(key())
-            .parseClaimsJws(token);
-          return true;
+        try {
+            Jwts.parser()
+                    .setSigningKey(key())
+                    .parseClaimsJws(token);
+            return true;
         } catch (ExpiredJwtException exception) {
             log.warn("Request to parse expired JWT : {} failed : {}", token, exception.getMessage());
         } catch (UnsupportedJwtException exception) {

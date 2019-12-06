@@ -2,7 +2,6 @@ package de.seprojekt.se2019.g4.mimir.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,16 +43,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-            .cors().and()
-            .csrf().disable()
-            .authorizeRequests()
-            .anyRequest().authenticated()
-            .and()
-            // https://stackoverflow.com/questions/48107157/autowired-is-null-in-usernamepasswordauthenticationfilter-spring-boot
-            .addFilter(new JwtAuthenticationFilter(authenticationManager(), getApplicationContext()))
-            .addFilter(new JwtAuthorizationFilter(authenticationManager(), getApplicationContext()))
-            .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .cors().and()
+                .csrf().disable()
+                .authorizeRequests()
+                .anyRequest().authenticated()
+                .and()
+                // https://stackoverflow.com/questions/48107157/autowired-is-null-in-usernamepasswordauthenticationfilter-spring-boot
+                .addFilter(new JwtAuthenticationFilter(authenticationManager(), getApplicationContext()))
+                .addFilter(new JwtAuthorizationFilter(authenticationManager(), getApplicationContext()))
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 
     /**
