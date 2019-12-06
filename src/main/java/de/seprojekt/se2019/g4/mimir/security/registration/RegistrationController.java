@@ -17,12 +17,13 @@ public class RegistrationController {
 
     /**
      * Sends a mail
+     *
      * @param receiver
      * @param text
      * @return
      */
     @GetMapping(value = "/register")
-    public ResponseEntity getArtifact(@RequestParam("receiver") String receiver, @RequestParam("text") String text ) {
+    public ResponseEntity getArtifact(@RequestParam("receiver") String receiver, @RequestParam("text") String text) {
         if (StringUtils.isEmpty(receiver)) {
             return ResponseEntity.badRequest().build();
         }
