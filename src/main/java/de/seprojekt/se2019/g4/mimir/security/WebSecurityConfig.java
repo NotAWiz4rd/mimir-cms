@@ -2,6 +2,7 @@ package de.seprojekt.se2019.g4.mimir.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +10,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.authentication.configurers.ldap.LdapAuthenticationProviderConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
 
@@ -41,19 +43,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        //permit/forbid access to these urls
         http
-                .httpBasic()
-                .and()
-                .authorizeRequests()
-                .antMatchers("/").permitAll()
-                .antMatchers("/favicon.png").permitAll()
-                .antMatchers("/favicon.ico").permitAll()
-                .anyRequest().authenticated();
-
-        http.cors(); // https://www.baeldung.com/spring-security-cors-preflight
-        // allow iframes
-        http.headers().frameOptions().sameOrigin();
+            .cors().and()
+            .csrf().disable()
+            .authorizeRequests()
+            .anyRequest().authenticated()
+            .and()
+            // https://stackoverflow.com/questions/48107157/autowired-is-null-in-usernamepasswordauthenticationfilter-spring-boot
+            .addFilter(new JwtAuthenticationFilter(authenticationManager(), getApplicationContext()))
+            .addFilter(new JwtAuthorizationFilter(authenticationManager(), getApplicationContext()))
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 
     /**
