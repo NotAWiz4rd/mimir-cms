@@ -7,10 +7,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
@@ -37,7 +40,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain filterChain, Authentication authentication) throws IOException {
         var token = jwtTokenProvider.generateToken(authentication);
-        response.getWriter().write(token);
+        var om = new ObjectMapper();
+        var map = new HashMap<String, String>();
+        map.put("token", token);
+        var json = om.writeValueAsString(map);
+        response.getWriter().write(json);
         response.flushBuffer();
     }
 }
