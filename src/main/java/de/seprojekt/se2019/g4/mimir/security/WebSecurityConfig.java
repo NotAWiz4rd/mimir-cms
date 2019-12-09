@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.ldap.LdapAuthenticationProviderConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -43,14 +44,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .cors().and()
-                .csrf().disable()
                 .authorizeRequests()
-                .anyRequest().authenticated()
+                    .antMatchers(HttpMethod.POST, "/artifact/*/download")
+                    .permitAll()
+                    .antMatchers(HttpMethod.POST, "/folder/*/download")
+                    .permitAll()
+                    .and()
+                .authorizeRequests()
+                    .anyRequest()
+                    .authenticated()
                 .and()
                 // https://stackoverflow.com/questions/48107157/autowired-is-null-in-usernamepasswordauthenticationfilter-spring-boot
                 .addFilter(new JwtAuthenticationFilter(authenticationManager(), getApplicationContext()))
                 .addFilter(new JwtAuthorizationFilter(authenticationManager(), getApplicationContext()))
+                .cors().and()
+                .csrf().disable()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }

@@ -11,8 +11,8 @@ Rest-Schnittstelle:
     /space/{id}?force -> DELETE löscht Space und gesamten Inhalt
     /folder/{id} -> liefert nur den Folder zurück
     /artifact/{id} -> liefert nur das Artifact zurück
-    /artifact/{id}?download -> startet den Download des Artifacts
-    /folder/{id}?download -> startet den Download des Folders
+    /artifact/{id}/download -> startet den Download des Artifacts
+    /folder/{id}/download -> startet den Download des Folders
     /folder/{id}?force -> DELETE löscht Folder und gesamten Inhalt
 
 Außerdem können Spaces, Folder und Artifacts über POST-Request (siehe Code) vom "ROOT-USER" erstellt und über DELETE-Requests gelöscht werden.<br>

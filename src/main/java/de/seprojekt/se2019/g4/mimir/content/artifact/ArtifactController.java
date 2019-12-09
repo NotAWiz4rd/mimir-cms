@@ -3,6 +3,8 @@ package de.seprojekt.se2019.g4.mimir.content.artifact;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderDTO;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
+import de.seprojekt.se2019.g4.mimir.security.JwtTokenProvider;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
@@ -23,12 +25,12 @@ import java.util.Optional;
  * This controller offers an HTTP interface for manipulating artifacts (e.g. deleting, creating etc.)
  */
 @Controller
-@PreAuthorize("isAuthenticated()")
 public class ArtifactController {
     private final static Logger LOGGER = LoggerFactory.getLogger(ArtifactController.class);
 
     private ArtifactService artifactService;
     private FolderService folderService;
+    private JwtTokenProvider jwtTokenProvider;
 
     /**
      * The parameters will be autowired by Spring.
@@ -36,9 +38,10 @@ public class ArtifactController {
      * @param artifactService
      * @param folderService
      */
-    public ArtifactController(ArtifactService artifactService, FolderService folderService) {
+    public ArtifactController(ArtifactService artifactService, FolderService folderService, JwtTokenProvider jwtTokenProvider) {
         this.artifactService = artifactService;
         this.folderService = folderService;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     /**
@@ -58,12 +61,17 @@ public class ArtifactController {
 
     /**
      * Generate a download of an artifact when a user visit this url.
+     * Not secured by Spring Security!
      *
      * @param id
      * @return
      */
-    @GetMapping(value = "/artifact/{id}", params = "download")
-    public ResponseEntity<InputStreamResource> downloadArtifact(@PathVariable long id) {
+    @PostMapping(value = "/artifact/{id}/download")
+    public ResponseEntity<InputStreamResource> downloadArtifact(@PathVariable long id, @RequestParam(required=true, name="token") String token) {
+        if (!jwtTokenProvider.validateToken(token)) {
+            return ResponseEntity.status(403).build();
+        }
+
         Optional<Artifact> artifact = artifactService.findById(id);
         if (artifact.isEmpty()) {
             ResponseEntity.notFound().build();
