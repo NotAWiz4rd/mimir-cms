@@ -1,6 +1,7 @@
 package de.seprojekt.se2019.g4.mimir.content.folder;
 
 import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactService;
+import de.seprojekt.se2019.g4.mimir.security.JwtTokenProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,11 +23,11 @@ import java.util.Optional;
  * This controller offers an HTTP interface for manipulating folders (e.g. deleting, creating etc.)
  */
 @Controller
-@PreAuthorize("isAuthenticated()")
 public class FolderController {
     private final static Logger LOGGER = LoggerFactory.getLogger(FolderController.class);
     private FolderService folderService;
     private ArtifactService artifactService;
+    private JwtTokenProvider jwtTokenProvider;
     private String applicationBaseUrl;
 
     /**
@@ -36,9 +37,10 @@ public class FolderController {
      * @param artifactService
      * @param applicationBaseUrl
      */
-    public FolderController(FolderService folderService, ArtifactService artifactService, @Value("${application.base.url}") String applicationBaseUrl) {
+    public FolderController(FolderService folderService, ArtifactService artifactService, JwtTokenProvider jwtTokenProvider, @Value("${application.base.url}") String applicationBaseUrl) {
         this.folderService = folderService;
         this.artifactService = artifactService;
+        this.jwtTokenProvider = jwtTokenProvider;
         this.applicationBaseUrl = applicationBaseUrl;
     }
 
@@ -60,12 +62,17 @@ public class FolderController {
 
     /**
      * Generated a download of a folder as a ZIP file
+     * Not secured by Spring Security!
      *
      * @param id
      * @return
      */
-    @GetMapping(value = "/folder/{id}", params = "download")
-    public ResponseEntity<InputStreamResource> downloadFolder(@PathVariable long id) throws IOException {
+    @PostMapping(value = "/folder/{id}/download")
+    public ResponseEntity<InputStreamResource> downloadFolder(@PathVariable long id, @RequestParam(required=true, name="token") String token) throws IOException {
+        if (!jwtTokenProvider.validateToken(token)) {
+            return ResponseEntity.status(403).build();
+        }
+
         Optional<Folder> folder = folderService.findById(id);
         if (folder.isEmpty()) {
             return ResponseEntity.notFound().build();
