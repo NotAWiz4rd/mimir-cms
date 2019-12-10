@@ -60,11 +60,6 @@ public class Artifact {
         this.id = id;
     }
 
-    @JsonProperty("contentType")
-    public String getShortContentType() {
-        return this.contentType.getType() + "/" + this.contentType.getSubtype();
-    }
-
     public Folder getParentFolder() {
         return parentFolder;
     }

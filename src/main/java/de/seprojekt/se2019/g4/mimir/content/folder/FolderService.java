@@ -212,7 +212,7 @@ public class FolderService {
      */
     private void zipFolderArtifacts(Folder folder, String path, ZipOutputStream zipOutputStream) throws IOException {
         for (Artifact childArtifact : this.artifactService.findByParentFolder(folder)) {
-            zipOutputStream.putNextEntry(new ZipEntry(path + "/" + artifactService.calculateFileName(childArtifact)));
+            zipOutputStream.putNextEntry(new ZipEntry(path + "/" + childArtifact.getName()));
             zipOutputStream.write(childArtifact.getContent());
             zipOutputStream.closeEntry();
         }

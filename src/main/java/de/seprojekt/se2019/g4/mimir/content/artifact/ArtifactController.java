@@ -77,8 +77,7 @@ public class ArtifactController {
             ResponseEntity.notFound().build();
         }
         HttpHeaders headers = new HttpHeaders();
-        String fileName = artifactService.calculateFileName(artifact.get());
-        headers.set("Content-Disposition", String.format("attachment; filename=\"%s\"", fileName));
+        headers.set("Content-Disposition", String.format("attachment; filename=\"%s\"", artifact.get().getName()));
 
         InputStream inputStream = artifactService.findArtifactContent(artifact.get());
         InputStreamResource resource = new InputStreamResource(inputStream);
