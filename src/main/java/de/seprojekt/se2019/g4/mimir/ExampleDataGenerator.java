@@ -51,9 +51,9 @@ public class ExampleDataGenerator implements CommandLineRunner {
 
         Folder task = folderService.create(folderService.findByParentFolderAndDisplayName(null, "space-1").get(), "Aufgabe 📬");
 
-        uploadFile(root, "Innenhof", MediaType.IMAGE_JPEG, "example_data/innenhof.jpg");
-        uploadFile(task, "SE-Projekt Aufgabe", MediaType.TEXT_HTML, "example_data/aufgabenstellung.html");
-        uploadFile(root, "Beispielvideo Final1", MediaType.valueOf("video/mp4"), "example_data/SampleVideo_1280x720_5mb.mp4");
+        uploadFile(root, "Innenhof.jpg", MediaType.IMAGE_JPEG, "example_data/innenhof.jpg");
+        uploadFile(task, "SE-Projekt Aufgabe.html", MediaType.TEXT_HTML, "example_data/aufgabenstellung.html");
+        uploadFile(root, "Beispielvideo Final1.mp4", MediaType.valueOf("video/mp4"), "example_data/SampleVideo_1280x720_5mb.mp4");
     }
 
     /**
