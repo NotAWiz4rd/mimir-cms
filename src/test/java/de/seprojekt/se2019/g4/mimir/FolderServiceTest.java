@@ -33,7 +33,7 @@ public class FolderServiceTest {
     public void shouldDownloadFolderAsZip() throws Exception {
         var parentFolder = folderService.create(null, "folder1");
         artifactService.upload(
-            "file1",
+            "file1.txt",
             new MockMultipartFile("file1.txt", "file1.txt", "text/plain", "foobar".getBytes()),
             parentFolder,
             new Principal(){
