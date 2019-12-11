@@ -1,18 +1,21 @@
 package de.seprojekt.se2019.g4.mimir.security;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
+import java.security.Key;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-
-import java.security.Key;
-import java.util.Date;
 
 @Component
 public class JwtTokenProvider {
@@ -31,6 +34,32 @@ public class JwtTokenProvider {
                 .setSubject(user.getUsername())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .compact();
+    }
+
+    public String generateShareToken(Long sharedEntityId, Integer expirationMs)
+        throws JsonProcessingException {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sub", OwnPrincipal.shareLinkUserName);
+        claims.put("id", String.valueOf(sharedEntityId));
+
+        String token = this.generateShareTokenWitchClaims(claims, expirationMs);
+        ObjectMapper om = new ObjectMapper();
+        Map<String, String> map = new HashMap<>();
+        map.put("token", token);
+
+        return om.writeValueAsString(map);
+    }
+
+    private String generateShareTokenWitchClaims(Map<String, Object> claims, Integer expirationMs) {
+        if(expirationMs == null) {
+            expirationMs = jwtExpirationMs;
+        }
+
+        return Jwts.builder()
+            .signWith(key())
+            .setClaims(claims)
+            .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
+            .compact();
     }
 
     private Key key() {
@@ -56,11 +85,12 @@ public class JwtTokenProvider {
         return false;
     }
 
-    public String getUserName(String token) {
-        return Jwts.parser()
-                .setSigningKey(key())
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+    public String getPayload(String token, String key) {
+        return (String) Jwts.parser()
+            .setSigningKey(key())
+            .parseClaimsJws(token)
+            .getBody()
+            .get(key);
     }
+
 }
