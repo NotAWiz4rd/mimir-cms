@@ -1,7 +1,12 @@
 package de.seprojekt.se2019.g4.mimir.content.folder;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactService;
 import de.seprojekt.se2019.g4.mimir.security.JwtTokenProvider;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.Principal;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,15 +14,15 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.MimeType;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Optional;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * This controller offers an HTTP interface for manipulating folders (e.g. deleting, creating etc.)
@@ -58,6 +63,22 @@ public class FolderController {
         }
         FolderDTO folderDTO = folderService.getFolderDTOWithTree(folder.get());
         return ResponseEntity.ok().body(folderDTO);
+    }
+
+    /**
+     * The user can get an JWT for sharing this folder
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping(value = "/folder/share/{id}")
+    public ResponseEntity<String> getShareToken(@PathVariable long id, @RequestParam(name = "expiration", required = false) Integer expirationMs, Principal principal)
+        throws JsonProcessingException {
+        Optional<Folder> folder = folderService.findById(id);
+        if (!folder.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().body(jwtTokenProvider.generateShareToken(folder.get().getId(), expirationMs));
     }
 
     /**

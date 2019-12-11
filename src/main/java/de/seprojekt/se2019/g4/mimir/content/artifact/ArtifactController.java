@@ -1,25 +1,27 @@
 package de.seprojekt.se2019.g4.mimir.content.artifact;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
-import de.seprojekt.se2019.g4.mimir.content.folder.FolderDTO;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
 import de.seprojekt.se2019.g4.mimir.security.JwtTokenProvider;
-
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.Principal;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.Principal;
-import java.util.Optional;
 
 /**
  * This controller offers an HTTP interface for manipulating artifacts (e.g. deleting, creating etc.)
@@ -57,6 +59,22 @@ public class ArtifactController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok().body(artifact.get());
+    }
+
+    /**
+     * The user can get an JWT for sharing this artifact
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping(value = "/artifact/share/{id}")
+    public ResponseEntity<String> getShareToken(@PathVariable long id, @RequestParam(name = "expiration", required = false) Integer expirationMs, Principal principal)
+        throws JsonProcessingException {
+        Optional<Artifact> artifact = artifactService.findById(id);
+        if (!artifact.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().body(jwtTokenProvider.generateShareToken(artifact.get().getId(), expirationMs));
     }
 
     /**
