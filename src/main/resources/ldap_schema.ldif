@@ -46,7 +46,6 @@ modifyTimestamp: 20190325140128Z
 
 dn: uid=jbark,ou=accounts,ou=users,dc=seprojekt,dc=de
 uid: jbark
-mail: jo.bark@ostfalia.de
 givenName: Joshua
 cn: Joshua Bark
 objectClass: inetOrgPerson
@@ -64,7 +63,6 @@ modifyTimestamp: 20190326092428Z
 
 dn: uid=thellmann,ou=accounts,ou=users,dc=seprojekt,dc=de
 uid: thellmann
-mail: t.hellmann@ostfalia.de
 givenName: Tobias
 sn: Hellmann
 cn: Tobias Hellmann
