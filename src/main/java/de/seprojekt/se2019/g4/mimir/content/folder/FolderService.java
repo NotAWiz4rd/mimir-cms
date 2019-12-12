@@ -2,6 +2,7 @@ package de.seprojekt.se2019.g4.mimir.content.folder;
 
 import de.seprojekt.se2019.g4.mimir.content.artifact.Artifact;
 import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactService;
+import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ public class FolderService {
     private final static Logger LOGGER = LoggerFactory.getLogger(FolderService.class);
     private FolderRepository folderRepository;
     private ArtifactService artifactService;
+    private SpaceService spaceService;
 
     /**
      * The parameters will be autowired by Spring.
@@ -31,9 +33,10 @@ public class FolderService {
      * @param folderRepository
      * @param artifactService
      */
-    public FolderService(FolderRepository folderRepository, ArtifactService artifactService) {
+    public FolderService(FolderRepository folderRepository, ArtifactService artifactService, SpaceService spaceService) {
         this.folderRepository = folderRepository;
         this.artifactService = artifactService;
+        this.spaceService = spaceService;
     }
 
     /**
@@ -79,6 +82,11 @@ public class FolderService {
         Folder folder = new Folder();
         folder.setName(name);
         folder.setParentFolder(parentFolder);
+        if(parentFolder == null) {
+            folder.setSpace(null);
+        } else {
+            folder.setSpace(this.spaceService.findByRootFolder(this.artifactService.getRootFolder(parentFolder)).get());
+        }
         return folderRepository.save(folder);
     }
 
@@ -241,8 +249,12 @@ public class FolderService {
           this.delete(f);
         }
         for (Artifact artifact : artifactService.findByParentFolder(folder)) {
-          artifactService.delete(artifact);
+            artifact.setSpace(null);
+          artifactService.delete(artifactService.update(artifact));
         }
-        folderRepository.delete(folder);
+        folder.setSpace(null);
+        folderRepository.delete(this.update(folder));
     }
+
+
 }

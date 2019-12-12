@@ -2,8 +2,11 @@ package de.seprojekt.se2019.g4.mimir.content.folder;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import de.seprojekt.se2019.g4.mimir.content.space.Space;
+import javax.validation.constraints.NotNull;
 import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
@@ -33,6 +36,12 @@ public class Folder {
     @Column(length = 512)
     private String name;
 
+    @JsonIgnore
+    @JoinColumn
+    @ManyToOne
+    @Nullable
+    private Space space;
+
     public Long getId() {
         return id;
     }
@@ -41,11 +50,12 @@ public class Folder {
         this.id = id;
     }
 
+    @Nullable
     public Folder getParentFolder() {
         return parentFolder;
     }
 
-    public void setParentFolder(Folder parentFolder) {
+    public void setParentFolder(@Nullable Folder parentFolder) {
         this.parentFolder = parentFolder;
     }
 
@@ -57,28 +67,40 @@ public class Folder {
         this.name = name;
     }
 
+    public Space getSpace() {
+        return space;
+    }
+
+    public void setSpace(Space space) {
+        this.space = space;
+    }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Folder folder = (Folder) o;
         return id.equals(folder.id) &&
-                Objects.equals(parentFolder, folder.parentFolder) &&
-                name.equals(folder.name);
+            parentFolder.equals(folder.parentFolder) &&
+            name.equals(folder.name) &&
+            Objects.equals(space, folder.space);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, parentFolder, name);
+        return Objects.hash(id, parentFolder, name, space);
     }
 
     @Override
     public String toString() {
         return "Folder{" +
-                "id=" + id +
-                ", parentFolder=" + parentFolder +
-                ", name='" + name +
-                '}';
+            "id=" + id +
+            ", parentFolder=" + parentFolder +
+            ", name='" + name + '\'' +
+            '}';
     }
 }
