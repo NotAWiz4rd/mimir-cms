@@ -53,12 +53,12 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         }
 
         var username = jwtTokenProvider.getPayload(token, "sub");
-        if(username.equals(JWTPrincipal.shareLinkUserName)) {
+        if(username.equals(JwtPrincipal.shareLinkUserName)) {
             var sharedEntityId = Long.parseLong(jwtTokenProvider.getPayload(token, "id"));
             var sharedEntityType = jwtTokenProvider.getPayload(token, "type");
-            return new UsernamePasswordAuthenticationToken(new JWTPrincipal(username, sharedEntityId, sharedEntityType), null, Collections.emptyList());
+            return new UsernamePasswordAuthenticationToken(new JwtPrincipal(username, sharedEntityId, sharedEntityType), null, Collections.emptyList());
         }else {
-            return new UsernamePasswordAuthenticationToken(new JWTPrincipal(username), null, Collections.emptyList());
+            return new UsernamePasswordAuthenticationToken(new JwtPrincipal(username), null, Collections.emptyList());
         }
     }
 }
