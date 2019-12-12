@@ -1,6 +1,8 @@
 package de.seprojekt.se2019.g4.mimir.content.space;
 
 
+import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -13,4 +15,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface SpaceRepository extends JpaRepository<Space, Long> {
 
+  Optional<Space> findByRootFolder(Folder folder);
 }
