@@ -39,7 +39,7 @@ public class JwtTokenProvider {
     public String generateShareToken(Long sharedEntityId, String sharedEntityType, Integer expirationMs)
         throws JsonProcessingException {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", JWTPrincipal.shareLinkUserName);
+        claims.put("sub", JwtPrincipal.shareLinkUserName);
         claims.put("id", String.valueOf(sharedEntityId));
         claims.put("type", sharedEntityType);
 

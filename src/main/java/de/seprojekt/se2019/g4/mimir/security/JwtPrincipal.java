@@ -2,7 +2,7 @@ package de.seprojekt.se2019.g4.mimir.security;
 
 import java.security.Principal;
 
-public class JWTPrincipal implements Principal {
+public class JwtPrincipal implements Principal {
 
   public static final String shareLinkUserName = "anonymous";
 
@@ -10,20 +10,20 @@ public class JWTPrincipal implements Principal {
   private Long sharedEntityId;
   private String sharedEntityType;
 
-  public JWTPrincipal(String name, Long sharedEntityId, String sharedEntityType) {
+  public JwtPrincipal(String name, Long sharedEntityId, String sharedEntityType) {
     this.name = name;
     this.sharedEntityId = sharedEntityId;
     this.sharedEntityType = sharedEntityType;
   }
 
-  public JWTPrincipal(String name) {
+  public JwtPrincipal(String name) {
     this.name = name;
     this.sharedEntityId = null;
     this.sharedEntityType = null;
   }
 
   public Boolean isAnonymous() {
-    return name.equals(JWTPrincipal.shareLinkUserName)
+    return name.equals(JwtPrincipal.shareLinkUserName)
         && this.sharedEntityId != null
         && this.sharedEntityType != null;
   }
