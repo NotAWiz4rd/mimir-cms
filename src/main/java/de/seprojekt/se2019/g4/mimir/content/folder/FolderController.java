@@ -2,6 +2,7 @@ package de.seprojekt.se2019.g4.mimir.content.folder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactService;
+import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
 import de.seprojekt.se2019.g4.mimir.security.JwtTokenProvider;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,9 +10,9 @@ import java.security.Principal;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -33,20 +34,19 @@ public class FolderController {
     private FolderService folderService;
     private ArtifactService artifactService;
     private JwtTokenProvider jwtTokenProvider;
-    private String applicationBaseUrl;
+    private SpaceService spaceService;
 
     /**
      * The parameters will be autowired by Spring.
      *
      * @param folderService
      * @param artifactService
-     * @param applicationBaseUrl
      */
-    public FolderController(FolderService folderService, ArtifactService artifactService, JwtTokenProvider jwtTokenProvider, @Value("${application.base.url}") String applicationBaseUrl) {
+    public FolderController(FolderService folderService, ArtifactService artifactService, JwtTokenProvider jwtTokenProvider, SpaceService spaceService) {
         this.folderService = folderService;
         this.artifactService = artifactService;
         this.jwtTokenProvider = jwtTokenProvider;
-        this.applicationBaseUrl = applicationBaseUrl;
+        this.spaceService = spaceService;
     }
 
     /**
@@ -56,10 +56,13 @@ public class FolderController {
      * @return
      */
     @GetMapping(value = "/folder/{id}")
-    public ResponseEntity<FolderDTO> getFolderContent(@PathVariable long id) {
+    public ResponseEntity<FolderDTO> getFolderContent(@PathVariable long id, Principal principal) {
         Optional<Folder> folder = folderService.findById(id);
         if (folder.isEmpty()) {
             return ResponseEntity.notFound().build();
+        }
+        if (!spaceService.isAuthorizedForSpace(folder.get().getSpace(), principal)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         FolderDTO folderDTO = folderService.getFolderDTOWithTree(folder.get());
         return ResponseEntity.ok().body(folderDTO);
@@ -75,8 +78,11 @@ public class FolderController {
     public ResponseEntity<String> getShareToken(@PathVariable long id, @RequestParam(name = "expiration", required = false) Integer expirationMs, Principal principal)
         throws JsonProcessingException {
         Optional<Folder> folder = folderService.findById(id);
-        if (!folder.isPresent()) {
+        if (folder.isEmpty()) {
             return ResponseEntity.notFound().build();
+        }
+        if (!spaceService.isAuthorizedForSpace(folder.get().getSpace(), principal)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok().body(jwtTokenProvider.generateShareToken(folder.get().getId(), Folder.TYPE_IDENTIFIER, expirationMs));
     }
@@ -98,6 +104,10 @@ public class FolderController {
         if (folder.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
+        if (!spaceService.isAuthorizedForSpace(folder.get().getSpace(), () -> jwtTokenProvider.getUserName(token))){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Disposition", String.format("attachment; filename=\"%s\"", folder.get().getName() + ".zip"));
 
@@ -119,13 +129,16 @@ public class FolderController {
      * @return
      */
     @PostMapping(value = "/folder")
-    public ResponseEntity<Folder> create(@RequestParam("name") String name, @RequestParam("parentId") Long parentFolderId) {
-        if (StringUtils.isEmpty(name)) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<Folder> create(@RequestParam("name") String name, @RequestParam("parentId") Long parentFolderId, Principal principal) {
         Optional<Folder> parentFolder = folderService.findById(parentFolderId);
         if (parentFolder.isEmpty()) {
             return ResponseEntity.notFound().build();
+        }
+        if (!spaceService.isAuthorizedForSpace(parentFolder.get().getSpace(), principal)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        if (StringUtils.isEmpty(name)) {
+            return ResponseEntity.badRequest().build();
         }
         if (parentFolder.isPresent() && folderService.exists(parentFolder.get(), name)) {
             return ResponseEntity.status(409).build();
@@ -141,10 +154,13 @@ public class FolderController {
      * @return
      */
     @PutMapping(value = "/folder/{id}")
-    public ResponseEntity<FolderDTO> renameFolder(@PathVariable long id, @RequestParam("name") String name) {
+    public ResponseEntity<FolderDTO> renameFolder(@PathVariable long id, @RequestParam("name") String name, Principal principal) {
         Optional<Folder> folderOptional = folderService.findById(id);
         if (folderOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
+        }
+        if (!spaceService.isAuthorizedForSpace(folderOptional.get().getSpace(), principal)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         if (StringUtils.isEmpty(name)) {
             return ResponseEntity.badRequest().build();
@@ -164,18 +180,19 @@ public class FolderController {
      * @return
      */
     @DeleteMapping(value = "/folder/{id}")
-    public ResponseEntity<String> delete(@PathVariable("id") long id, @RequestParam(value = "force", required = false) String force) {
+    public ResponseEntity<String> delete(@PathVariable("id") long id, @RequestParam(value = "force", required = false) String force, Principal principal) {
         Optional<Folder> folder = folderService.findById(id);
         if (folder.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        if (folder.isPresent()) {
-            if (force == null && !folderService.isEmpty(folder.get())) {
-                return ResponseEntity.status(409).body("Folder is not empty!");
-            }
-            if (force != null && folder.get().getParentFolder() == null) {
-                return ResponseEntity.status(409).body("Folder is a root folder. Delete the space instead!");
-            }
+        if (!spaceService.isAuthorizedForSpace(folder.get().getSpace(), principal)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        if (force == null && !folderService.isEmpty(folder.get())) {
+            return ResponseEntity.status(409).body("Folder is not empty!");
+        }
+        if (force != null && folder.get().getParentFolder() == null) {
+            return ResponseEntity.status(409).body("Folder is a root folder. Delete the space instead!");
         }
         folderService.delete(folder.get());
         return ResponseEntity.ok().build();
