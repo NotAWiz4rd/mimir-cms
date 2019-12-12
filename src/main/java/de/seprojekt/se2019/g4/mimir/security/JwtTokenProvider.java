@@ -36,13 +36,14 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String generateShareToken(Long sharedEntityId, Integer expirationMs)
+    public String generateShareToken(Long sharedEntityId, String sharedEntityType, Integer expirationMs)
         throws JsonProcessingException {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", OwnPrincipal.shareLinkUserName);
+        claims.put("sub", JWTPrincipal.shareLinkUserName);
         claims.put("id", String.valueOf(sharedEntityId));
+        claims.put("type", sharedEntityType);
 
-        String token = this.generateShareTokenWitchClaims(claims, expirationMs);
+        String token = this.generateShareTokenWithClaims(claims, expirationMs);
         ObjectMapper om = new ObjectMapper();
         Map<String, String> map = new HashMap<>();
         map.put("token", token);
@@ -50,7 +51,7 @@ public class JwtTokenProvider {
         return om.writeValueAsString(map);
     }
 
-    private String generateShareTokenWitchClaims(Map<String, Object> claims, Integer expirationMs) {
+    private String generateShareTokenWithClaims(Map<String, Object> claims, Integer expirationMs) {
         if(expirationMs == null) {
             expirationMs = jwtExpirationMs;
         }

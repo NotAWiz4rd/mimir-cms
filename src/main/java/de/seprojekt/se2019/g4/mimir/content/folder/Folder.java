@@ -14,8 +14,9 @@ import java.util.Objects;
  * The result of a folder table query will be mapped on objects from this class.
  */
 @Entity
-
 public class Folder {
+
+    public static final String TYPE_IDENTIFIER = "F";
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
