@@ -3,6 +3,8 @@ package de.seprojekt.se2019.g4.mimir.content.artifact;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
+import de.seprojekt.se2019.g4.mimir.content.space.Space;
+import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
 import de.seprojekt.se2019.g4.mimir.security.JwtTokenProvider;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
@@ -33,6 +36,7 @@ public class ArtifactController {
     private ArtifactService artifactService;
     private FolderService folderService;
     private JwtTokenProvider jwtTokenProvider;
+    private SpaceService spaceService;
 
     /**
      * The parameters will be autowired by Spring.
@@ -40,10 +44,11 @@ public class ArtifactController {
      * @param artifactService
      * @param folderService
      */
-    public ArtifactController(ArtifactService artifactService, FolderService folderService, JwtTokenProvider jwtTokenProvider) {
+    public ArtifactController(ArtifactService artifactService, FolderService folderService, JwtTokenProvider jwtTokenProvider, SpaceService spaceService) {
         this.artifactService = artifactService;
         this.folderService = folderService;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.spaceService = spaceService;
     }
 
     /**
@@ -53,10 +58,13 @@ public class ArtifactController {
      * @return
      */
     @GetMapping(value = "/artifact/{id}")
-    public ResponseEntity<Artifact> getArtifact(@PathVariable long id) {
+    public ResponseEntity<Artifact> getArtifact(@PathVariable long id, Principal principal) {
         Optional<Artifact> artifact = artifactService.findById(id);
         if (!artifact.isPresent()) {
             return ResponseEntity.notFound().build();
+        }
+        if (!spaceService.isAuthorizedForSpace(artifact.get().getSpace(), principal)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok().body(artifact.get());
     }
@@ -94,6 +102,9 @@ public class ArtifactController {
         if (artifact.isEmpty()) {
             ResponseEntity.notFound().build();
         }
+        if (!spaceService.isAuthorizedForSpace(artifact.get().getSpace(), () -> jwtTokenProvider.getUserName(token))){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Disposition", String.format("attachment; filename=\"%s\"", artifact.get().getName()));
 
@@ -118,19 +129,22 @@ public class ArtifactController {
      * @throws IOException
      */
     @PostMapping(value = "/artifact")
-    public ResponseEntity<Artifact> uploadArtifact(Principal principal, @RequestParam("parentId") Long parentFolderId, @RequestParam("name") String name, @RequestParam("file") MultipartFile file) throws IOException {
-        if (StringUtils.isEmpty(name)) {
-            return ResponseEntity.badRequest().build();
-        }
-        if (file == null || file.getContentType() == null || file.isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<Artifact> uploadArtifact(@RequestParam("parentId") Long parentFolderId, @RequestParam("name") String name, @RequestParam("file") MultipartFile file, Principal principal) throws IOException {
         Optional<Folder> parentFolder = folderService.findById(parentFolderId);
         if (parentFolder.isEmpty()) {
             return ResponseEntity.status(409).build();
         }
         if (artifactService.existsByParentFolderAndDisplayName(parentFolder.get(), name)) {
             return ResponseEntity.status(409).build();
+        }
+        if (StringUtils.isEmpty(name)) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (file == null || file.getContentType() == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (!spaceService.isAuthorizedForSpace(parentFolder.get().getSpace(), principal)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok().body(artifactService.upload(name, file, parentFolder.get(), principal));
     }
@@ -143,10 +157,13 @@ public class ArtifactController {
      * @return
      */
     @PutMapping(value = "/artifact/{id}")
-    public ResponseEntity<Artifact> renameArtifact(@PathVariable long id, @RequestParam("name") String name) {
+    public ResponseEntity<Artifact> renameArtifact(@PathVariable long id, @RequestParam("name") String name, Principal principal) {
         Optional<Artifact> artifactOptional = artifactService.findById(id);
         if (artifactOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
+        }
+        if (!spaceService.isAuthorizedForSpace(artifactOptional.get().getSpace(), principal)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         if (StringUtils.isEmpty(name)) {
             return ResponseEntity.badRequest().build();
@@ -163,10 +180,13 @@ public class ArtifactController {
      * @return
      */
     @DeleteMapping(value = "/artifact/{id}")
-    public ResponseEntity<String> delete(@PathVariable long id) {
+    public ResponseEntity<String> delete(@PathVariable long id, Principal principal) {
         Optional<Artifact> artifact = artifactService.findById(id);
         if (artifact.isEmpty()) {
             return ResponseEntity.notFound().build();
+        }
+        if (!spaceService.isAuthorizedForSpace(artifact.get().getSpace(), principal)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         artifactService.delete(artifact.get());
         return ResponseEntity.ok().build();
