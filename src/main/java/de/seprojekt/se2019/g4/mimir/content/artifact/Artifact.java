@@ -16,6 +16,8 @@ import java.util.Objects;
 @Entity
 public class Artifact {
 
+    public static final String TYPE_IDENTIFIER = "A";
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

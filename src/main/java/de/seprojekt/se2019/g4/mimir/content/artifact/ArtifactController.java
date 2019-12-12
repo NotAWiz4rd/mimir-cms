@@ -74,7 +74,7 @@ public class ArtifactController {
         if (!artifact.isPresent()) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok().body(jwtTokenProvider.generateShareToken(artifact.get().getId(), expirationMs));
+        return ResponseEntity.ok().body(jwtTokenProvider.generateShareToken(artifact.get().getId(), Artifact.TYPE_IDENTIFIER, expirationMs));
     }
 
     /**

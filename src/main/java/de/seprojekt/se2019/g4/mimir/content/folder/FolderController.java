@@ -78,7 +78,7 @@ public class FolderController {
         if (!folder.isPresent()) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok().body(jwtTokenProvider.generateShareToken(folder.get().getId(), expirationMs));
+        return ResponseEntity.ok().body(jwtTokenProvider.generateShareToken(folder.get().getId(), Folder.TYPE_IDENTIFIER, expirationMs));
     }
 
     /**
