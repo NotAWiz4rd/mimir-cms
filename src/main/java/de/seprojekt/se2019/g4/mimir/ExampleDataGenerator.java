@@ -5,6 +5,10 @@ import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
 import de.seprojekt.se2019.g4.mimir.content.space.Space;
 import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
+import de.seprojekt.se2019.g4.mimir.security.user.User;
+import de.seprojekt.se2019.g4.mimir.security.user.UserService;
+import java.io.IOException;
+import java.security.Principal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -14,9 +18,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.security.Principal;
 
 /**
  * This class will be automatically executed on application startup, when then current profile != test is.
@@ -29,13 +30,14 @@ public class ExampleDataGenerator implements CommandLineRunner {
     private ArtifactService artifactService;
     private FolderService folderService;
     private SpaceService spaceService;
-    private Principal principal;
+    private UserService userService;
+    private Principal principal = () -> "thellmann";
 
-    public ExampleDataGenerator(ArtifactService artifactService, FolderService folderService, SpaceService spaceService) {
+    public ExampleDataGenerator(ArtifactService artifactService, FolderService folderService, SpaceService spaceService, UserService userService) {
         this.artifactService = artifactService;
         this.folderService = folderService;
         this.spaceService = spaceService;
-        this.principal = () -> "GENERATOR-USER";
+        this.userService = userService;
     }
 
     /**
@@ -46,8 +48,13 @@ public class ExampleDataGenerator implements CommandLineRunner {
      */
     @Override
     public void run(String... args) throws Exception {
+        User user = userService.create("thellmann", "t.hellman@ostfalia.de");
+        userService.create("jbark", "jo.bark@ostfalia.de");
+
         Folder root = folderService.create(null, "space-1");
         Space space = spaceService.create("space-1", root, principal);
+        root.setSpace(space);
+        folderService.update(root);
 
         Folder task = folderService.create(folderService.findByParentFolderAndDisplayName(null, "space-1").get(), "Aufgabe 📬");
 

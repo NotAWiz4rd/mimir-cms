@@ -2,7 +2,10 @@ package de.seprojekt.se2019.g4.mimir.content.artifact;
 
 import com.fasterxml.jackson.annotation.*;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
+import de.seprojekt.se2019.g4.mimir.content.space.Space;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.Thumbnail;
+import java.util.Arrays;
+import javax.validation.constraints.NotNull;
 import org.springframework.http.MediaType;
 
 import javax.persistence.*;
@@ -33,9 +36,6 @@ public class Artifact {
     private String name;
 
     @Column
-    private String author;
-
-    @Column
     private Instant creationDate;
 
     @Column
@@ -53,6 +53,11 @@ public class Artifact {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "thumbnail_id")
     private Thumbnail thumbnail = new Thumbnail();
+
+    @JsonIgnore
+    @JoinColumn
+    @ManyToOne
+    private Space space;
 
     public Long getId() {
         return id;
@@ -78,12 +83,12 @@ public class Artifact {
         this.name = name;
     }
 
-    public String getAuthor() {
-        return author;
+    public Instant getCreationDate() {
+        return creationDate;
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
+    public void setCreationDate(Instant creationDate) {
+        this.creationDate = creationDate;
     }
 
     public Long getContentLength() {
@@ -92,6 +97,14 @@ public class Artifact {
 
     public void setContentLength(Long contentLength) {
         this.contentLength = contentLength;
+    }
+
+    public byte[] getContent() {
+        return content;
+    }
+
+    public void setContent(byte[] content) {
+        this.content = content;
     }
 
     public MediaType getContentType() {
@@ -110,55 +123,56 @@ public class Artifact {
         this.thumbnail = thumbnail;
     }
 
-    public Instant getCreationDate() {
-        return creationDate;
+    public Space getSpace() {
+        return space;
     }
 
-    public void setCreationDate(Instant creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    public byte[] getContent() {
-        return content;
-    }
-
-    public void setContent(byte[] content) {
-        this.content = content;
+    public void setSpace(Space space) {
+        this.space = space;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Artifact artifact = (Artifact) o;
         return id.equals(artifact.id) &&
-                parentFolder.equals(artifact.parentFolder) &&
-                name.equals(artifact.name) &&
-                author.equals(artifact.author) &&
-                creationDate.equals(artifact.creationDate) &&
-                contentLength.equals(artifact.contentLength) &&
-                contentType.equals(artifact.contentType) &&
-                thumbnail.equals(artifact.thumbnail);
+            parentFolder.equals(artifact.parentFolder) &&
+            name.equals(artifact.name) &&
+            creationDate.equals(artifact.creationDate) &&
+            contentLength.equals(artifact.contentLength) &&
+            Arrays.equals(content, artifact.content) &&
+            contentType.equals(artifact.contentType) &&
+            thumbnail.equals(artifact.thumbnail) &&
+            Objects.equals(space, artifact.space);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, parentFolder, name, author, creationDate, contentLength, contentType, thumbnail);
+        int result = Objects
+            .hash(id, parentFolder, name, creationDate, contentLength, contentType,
+                thumbnail,
+                space);
+        result = 31 * result + Arrays.hashCode(content);
+        return result;
     }
 
     @Override
     public String toString() {
         return "Artifact{" +
-                "id=" + id +
-                ", parentFolder=" + parentFolder +
-                ", name='" + name + '\'' +
-                ", author='" + author + '\'' +
-                ", creationDate=" + creationDate +
-                ", contentLength=" + contentLength +
-                ", contentType=" + contentType +
-                ", thumbnail=" + thumbnail +
-                '}';
+            "id=" + id +
+            ", parentFolder=" + parentFolder +
+            ", name='" + name + '\'' +
+            ", creationDate=" + creationDate +
+            ", contentLength=" + contentLength +
+            ", content=" + Arrays.toString(content) +
+            ", contentType=" + contentType +
+            ", thumbnail=" + thumbnail +
+            ", space=" + space +
+            '}';
     }
-
-
 }

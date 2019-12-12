@@ -1,9 +1,20 @@
 package de.seprojekt.se2019.g4.mimir.content.artifact;
 
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
+import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
+import de.seprojekt.se2019.g4.mimir.content.space.Space;
+import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.Thumbnail;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.ThumbnailGenerator;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.ThumbnailRepository;
+import de.seprojekt.se2019.g4.mimir.security.user.User;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.Principal;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.mime.MimeTypeException;
@@ -13,14 +24,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.Principal;
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * This service offers helper methods for dealing with artifacts.
@@ -36,6 +39,7 @@ public class ArtifactService {
     private ArtifactRepository artifactRepository;
     private ThumbnailGenerator thumbnailGenerator;
     private ThumbnailRepository thumbnailRepository;
+    private SpaceService spaceService;
 
     /**
      * The parameters will be autowired by Spring.
@@ -43,10 +47,12 @@ public class ArtifactService {
      * @param artifactRepository
      * @param thumbnailGenerator
      */
-    public ArtifactService(ArtifactRepository artifactRepository, ThumbnailRepository thumbnailRepository, ThumbnailGenerator thumbnailGenerator) {
+    public ArtifactService(ArtifactRepository artifactRepository, ThumbnailRepository thumbnailRepository,
+        ThumbnailGenerator thumbnailGenerator, SpaceService spaceService) {
         this.artifactRepository = artifactRepository;
         this.thumbnailRepository = thumbnailRepository;
         this.thumbnailGenerator = thumbnailGenerator;
+        this.spaceService = spaceService;
     }
 
     /**
@@ -145,7 +151,7 @@ public class ArtifactService {
         // update metadata of artifact
         MediaType contentType = MediaType.valueOf(file.getContentType());
         artifact.setContentType(contentType);
-        artifact.setAuthor(principal.getName());
+        artifact.setSpace(spaceService.findByRootFolder(getRootFolder(parentFolder)).get());
 
         // save artifact binary data
         try (InputStream inputStream = file.getInputStream()) {
@@ -219,5 +225,18 @@ public class ArtifactService {
             // its not possible, simply return the name
             return displayName;
         }
+    }
+
+    /**
+     * returns root folder for this folder
+     * @param folder
+     * @return
+     */
+    public Folder getRootFolder(Folder folder) {
+      if(folder == null || folder.getParentFolder() == null) {
+        return folder;
+      } else {
+        return getRootFolder(folder.getParentFolder());
+      }
     }
 }
