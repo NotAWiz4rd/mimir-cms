@@ -50,7 +50,6 @@ public class OwnUserDetailsContextMapper extends LdapUserDetailsMapper implement
         ldapAttributes.setSurname(getAttribute(entry, "sn"));
         ldapAttributes.setForename(getAttribute(entry, "givenName"));
         ldapAttributes.setCommonName(getAttribute(entry, "cn"));
-        ldapAttributes.setEmail(getAttribute(entry, "mail"));
         return ldapAttributes;
     }
 

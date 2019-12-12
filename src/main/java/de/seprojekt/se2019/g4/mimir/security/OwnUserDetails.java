@@ -75,10 +75,6 @@ public class OwnUserDetails implements LdapUserDetails {
         return ldapAttributes.commonName;
     }
 
-    public String getEmail() {
-        return ldapAttributes.email;
-    }
-
     @Override
     public String toString() {
         return "OwnUserDetails{" +
@@ -91,9 +87,7 @@ public class OwnUserDetails implements LdapUserDetails {
                 ", isCredentialsNonExpired=" + isCredentialsNonExpired() +
                 ", isEnabled=" + isEnabled() +
                 ", forename=" + getForename() +
-                ", surname=" + getSurname() +
                 ", commonName=" + getCommonName() +
-                ", email=" + getEmail() +
                 '}';
     }
 
@@ -101,7 +95,6 @@ public class OwnUserDetails implements LdapUserDetails {
         private String forename;
         private String surname;
         private String commonName;
-        private String email;
 
         void setForename(String forename) {
             this.forename = forename;
@@ -115,8 +108,5 @@ public class OwnUserDetails implements LdapUserDetails {
             this.commonName = commonName;
         }
 
-        void setEmail(String email) {
-            this.email = email;
-        }
     }
 }
