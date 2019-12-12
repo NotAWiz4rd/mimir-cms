@@ -2,10 +2,13 @@ package de.seprojekt.se2019.g4.mimir.content.thumbnail;
 
 import de.seprojekt.se2019.g4.mimir.content.artifact.Artifact;
 import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactService;
+import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
+import java.security.Principal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -25,15 +28,17 @@ public class ThumbnailController {
     private final static Logger LOGGER = LoggerFactory.getLogger(ThumbnailController.class);
     private IconDiscoverService iconDiscoverService;
     private ArtifactService artifactService;
+    private SpaceService spaceService;
 
     /**
      * The parameters will be autowired by Spring.
      * @param iconDiscoverService
      * @param artifactService
      */
-    public ThumbnailController(IconDiscoverService iconDiscoverService, ArtifactService artifactService) {
+    public ThumbnailController(IconDiscoverService iconDiscoverService, ArtifactService artifactService, SpaceService spaceService) {
         this.iconDiscoverService = iconDiscoverService;
         this.artifactService = artifactService;
+        this.spaceService = spaceService;
     }
 
     /**
@@ -44,10 +49,13 @@ public class ThumbnailController {
      */
     @GetMapping(value = "/thumbnail/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     @ResponseBody
-    public ResponseEntity getThumbnail(@PathVariable Long id) {
+    public ResponseEntity getThumbnail(@PathVariable Long id, Principal principal) {
         Optional<Artifact> artifact = artifactService.findById(id);
         if(artifact.isEmpty()) {
             return ResponseEntity.notFound().build();
+        }
+        if (!spaceService.isAuthorizedForSpace(artifact.get().getSpace(), principal)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return artifactService.findThumbnail(artifact.get())
                 .map(thumbnailInputStream -> returnRealThumbnail(thumbnailInputStream, artifact.get()))
