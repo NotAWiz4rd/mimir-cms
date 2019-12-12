@@ -1,4 +1,4 @@
-package de.seprojekt.se2019.g4.mimir.content.icon;
+package de.seprojekt.se2019.g4.mimir.content.thumbnail;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;

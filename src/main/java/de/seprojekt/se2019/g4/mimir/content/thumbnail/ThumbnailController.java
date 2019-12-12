@@ -2,7 +2,6 @@ package de.seprojekt.se2019.g4.mimir.content.thumbnail;
 
 import de.seprojekt.se2019.g4.mimir.content.artifact.Artifact;
 import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactService;
-import de.seprojekt.se2019.g4.mimir.content.icon.IconDiscoverService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
