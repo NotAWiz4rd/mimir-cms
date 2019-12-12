@@ -1,8 +1,9 @@
 package de.seprojekt.se2019.g4.mimir.content.space;
 
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
+import de.seprojekt.se2019.g4.mimir.security.user.User;
+import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import java.security.Principal;
-import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,23 +15,16 @@ public class SpaceService {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SpaceService.class);
     private SpaceRepository spaceRepository;
+    private UserService userService;
 
     /**
      * The parameters will be autowired by Spring.
      *
      * @param spaceRepository
      */
-    public SpaceService(SpaceRepository spaceRepository) {
+    public SpaceService(SpaceRepository spaceRepository, UserService userService) {
         this.spaceRepository = spaceRepository;
-    }
-
-    /**
-     * Return list of all spaces
-     *
-     * @return
-     */
-    public List<Space> findAll() {
-        return this.spaceRepository.findAll();
+        this.userService = userService;
     }
 
     /**
@@ -44,6 +38,28 @@ public class SpaceService {
     }
 
     /**
+     * Return space with given root folder
+     *
+     * @param folder
+     * @return
+     */
+    public Optional<Space> findByRootFolder(Folder folder) {
+        return this.spaceRepository.findByRootFolder(folder);
+    }
+
+
+    /**
+     * Update a space
+     *
+     * @param space
+     * @return
+     */
+    @Transactional
+    public Space update(Space space) {
+        return spaceRepository.save(space);
+    }
+
+    /**
      * Return new space
      *
      * @param name
@@ -53,14 +69,17 @@ public class SpaceService {
      */
     @Transactional
     public Space create(String name, Folder rootFolder, Principal principal) {
-        // TODO CHANGE AFTER USER MANAGEMENT IMPLEMENTATION
-        principal = () -> "ROOT-USER";
-
         Space space = new Space();
         space.setName(name);
         space.setRootFolder(rootFolder);
-        space.setOwner(principal.getName());
-        return spaceRepository.save(space);
+
+        space = spaceRepository.save(space);
+
+        User user = userService.findByName(principal.getName()).get();
+        user.getSpaces().add(space);
+        userService.update(user);
+
+        return space;
     }
 
     /**
@@ -70,6 +89,22 @@ public class SpaceService {
     @Transactional
     public void delete(Space space) {
         this.spaceRepository.delete(space);
+    }
+
+    /**
+     * Check if user is authorized for space
+     *
+     * @param space
+     * @param principal
+     * @return
+     */
+    @Transactional
+    public boolean isAuthorizedForSpace(Space space, Principal principal) {
+        Optional<User> optionalUser = this.userService.findByName(principal.getName());
+        if(optionalUser.isEmpty()) {
+            return false;
+        }
+        return optionalUser.get().getSpaces().contains(space);
     }
 
 }

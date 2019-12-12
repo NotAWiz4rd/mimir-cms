@@ -12,7 +12,6 @@ public class SpaceDTO extends Space {
     public SpaceDTO(Space space) {
         this.setId(space.getId());
         this.setName(space.getName());
-        this.setOwner(space.getOwner());
         this.setRootFolder(space.getRootFolder());
     }
 

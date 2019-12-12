@@ -2,8 +2,10 @@ package de.seprojekt.se2019.g4.mimir.content.space;
 
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
+import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
@@ -19,15 +21,17 @@ public class SpaceController {
     private final static Logger LOGGER = LoggerFactory.getLogger(SpaceController.class);
     private SpaceService spaceService;
     private FolderService folderService;
+    private UserService userService;
 
     /**
      * The parameters will be autowired by Spring.
      *
      * @param spaceService
      */
-    public SpaceController(SpaceService spaceService, FolderService folderService) {
+    public SpaceController(SpaceService spaceService, FolderService folderService, UserService userService) {
         this.spaceService = spaceService;
         this.folderService = folderService;
+        this.userService = userService;
     }
 
     /**
@@ -36,8 +40,8 @@ public class SpaceController {
      * @return
      */
     @GetMapping(value = "/spaces")
-    public ResponseEntity<List<Space>> getSpaces() {
-        return ResponseEntity.ok().body(spaceService.findAll());
+    public ResponseEntity<List<Space>> getSpaces(Principal principal) {
+        return ResponseEntity.ok().body(userService.findByName(principal.getName()).get().getSpaces());
     }
 
     /**
@@ -48,11 +52,15 @@ public class SpaceController {
      * @return
      */
     @GetMapping(value = "/space/{id}")
-    public ResponseEntity<SpaceDTO> getSpace(@PathVariable long id) {
+    public ResponseEntity<SpaceDTO> getSpace(@PathVariable long id, Principal principal) {
         Optional<Space> space = spaceService.findById(id);
         if (!space.isPresent()) {
             return ResponseEntity.notFound().build();
         }
+        if (!spaceService.isAuthorizedForSpace(space.get(), principal)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        spaceService.isAuthorizedForSpace(space.get(), principal);
         SpaceDTO spaceDTO = new SpaceDTO(space.get());
         spaceDTO.setRoot(folderService.getFolderDTOWithTree(space.get().getRootFolder()));
         return ResponseEntity.ok().body(spaceDTO);
@@ -61,17 +69,20 @@ public class SpaceController {
     /**
      * The user can create an space by calling this interface.
      *
-     * @param principal
      * @param name
+     * @param principal
      * @return
      */
     @PostMapping(value = "/space")
-    public ResponseEntity<Space> createSpace(Principal principal, @RequestParam("name") String name) {
+    public ResponseEntity<Space> createSpace(@RequestParam("name") String name, Principal principal) {
         if (StringUtils.isEmpty(name)) {
             return ResponseEntity.badRequest().build();
         }
         Folder rootFolder = folderService.create(null, name);
-        return ResponseEntity.ok().body(spaceService.create(name, rootFolder, principal));
+        Space space = spaceService.create(name, rootFolder, principal);
+        rootFolder.setSpace(space);
+        this.folderService.update(rootFolder);
+        return ResponseEntity.ok().body(space);
     }
 
     /**
@@ -82,16 +93,28 @@ public class SpaceController {
      * @return
      */
     @DeleteMapping(value = "/space/{id}")
-    public ResponseEntity<String> delete(@PathVariable("id") long id, @RequestParam(value = "force", required = false) String force) {
-        Optional<Space> space = spaceService.findById(id);
-        if (space.isEmpty()) {
+    public ResponseEntity<String> delete(@PathVariable("id") long id, @RequestParam(value = "force", required = false) String force, Principal principal) {
+        Optional<Space> spaceOptional = spaceService.findById(id);
+        if (spaceOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        if (space.isPresent() && force == null && !folderService.isEmpty(space.get().getRootFolder())) {
+        if (!spaceService.isAuthorizedForSpace(spaceOptional.get(), principal)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        if (spaceOptional.isPresent() && force == null && userService.getNumberOfSpaceUsers(spaceOptional.get()) > 1) {
+            return ResponseEntity.status(409).body("Space has more than one user!");
+        }
+        if (spaceOptional.isPresent() && force == null && (!folderService.isEmpty(spaceOptional.get().getRootFolder()))) {
             return ResponseEntity.status(409).body("Space is not empty!");
         }
-        spaceService.delete(space.get());
-        folderService.delete(space.get().getRootFolder());
+        Space space = spaceOptional.get();
+        Folder rootFolder = space.getRootFolder();
+        space.setRootFolder(null);
+        space = spaceService.update(space);
+
+        userService.removeAllFromSpace(space);
+        folderService.delete(rootFolder);
+        spaceService.delete(space);
         return ResponseEntity.ok().build();
     }
 }
