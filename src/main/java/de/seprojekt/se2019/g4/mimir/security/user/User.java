@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 
@@ -26,7 +27,7 @@ public class User {
   @Column(unique = true)
   private String mail;
 
-  @OneToMany
+  @ManyToMany
   @JoinColumn
   private List<Space> spaces;
 

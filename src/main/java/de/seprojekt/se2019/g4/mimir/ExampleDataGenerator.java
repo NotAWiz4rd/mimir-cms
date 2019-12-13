@@ -31,7 +31,6 @@ public class ExampleDataGenerator implements CommandLineRunner {
     private FolderService folderService;
     private SpaceService spaceService;
     private UserService userService;
-    private Principal principal = () -> "thellmann";
 
     public ExampleDataGenerator(ArtifactService artifactService, FolderService folderService, SpaceService spaceService, UserService userService) {
         this.artifactService = artifactService;
@@ -48,19 +47,30 @@ public class ExampleDataGenerator implements CommandLineRunner {
      */
     @Override
     public void run(String... args) throws Exception {
-        User user = userService.create("thellmann", "t.hellman@ostfalia.de");
-        userService.create("jbark", "jo.bark@ostfalia.de");
+        User user1 = userService.create("thellmann", "t.hellmann@ostfalia.de");
+        User user2 = userService.create("jbark", "jo.bark@ostfalia.de");
 
-        Folder root = folderService.create(null, "space-1");
-        Space space = spaceService.create("space-1", root, principal);
+        Folder root = folderService.create(null, "thellmann");
+        Space space = spaceService.create("thellmann", root, () -> "thellmann");
         root.setSpace(space);
         folderService.update(root);
 
-        Folder task = folderService.create(folderService.findByParentFolderAndDisplayName(null, "space-1").get(), "Aufgabe 📬");
+        Folder root2 = folderService.create(null, "jbark");
+        Space space2 = spaceService.create("jbark", root2, () -> "jbark");
+        root2.setSpace(space2);
+        folderService.update(root2);
 
-        uploadFile(root, "Innenhof.jpg", MediaType.IMAGE_JPEG, "example_data/innenhof.jpg");
+        Folder sharedRoot = folderService.create(null, "shared");
+        Space sharedSpace = spaceService.create("shared", sharedRoot, () -> "thellmann");
+        sharedRoot.setSpace(sharedSpace);
+        folderService.update(sharedRoot);
+        userService.addUserToSpace(user2, sharedSpace);
+
+        Folder task = folderService.create(folderService.findByParentFolderAndDisplayName(null, "shared").get(), "Aufgabe 📬");
+
+        uploadFile(sharedRoot, "Innenhof.jpg", MediaType.IMAGE_JPEG, "example_data/innenhof.jpg");
         uploadFile(task, "SE-Projekt Aufgabe.html", MediaType.TEXT_HTML, "example_data/aufgabenstellung.html");
-        uploadFile(root, "Beispielvideo Final1.mp4", MediaType.valueOf("video/mp4"), "example_data/SampleVideo_1280x720_5mb.mp4");
+        uploadFile(sharedRoot, "Beispielvideo Final1.mp4", MediaType.valueOf("video/mp4"), "example_data/SampleVideo_1280x720_5mb.mp4");
     }
 
     /**
@@ -74,7 +84,7 @@ public class ExampleDataGenerator implements CommandLineRunner {
      */
     private void uploadFile(Folder parentFolder, String name, MediaType mediaType, String systemPath) throws IOException {
         MultipartFile multipartFile = new ExampleMultipartFile(name, mediaType, new ClassPathResource(systemPath));
-        artifactService.upload(name, multipartFile, parentFolder, principal);
+        artifactService.upload(name, multipartFile, parentFolder, () -> "thellmann");
         LOGGER.info("Added artifact '{}'", name);
     }
 }
