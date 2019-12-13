@@ -5,11 +5,13 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import de.seprojekt.se2019.g4.mimir.content.comment.Comment;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.space.Space;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.Thumbnail;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -22,6 +24,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import org.springframework.http.MediaType;
 
@@ -71,6 +74,10 @@ public class Artifact {
   @JoinColumn
   @ManyToOne
   private Space space;
+
+  @OneToMany(mappedBy = "artifact")
+  @JsonIgnore
+  private List<Comment> comments;
 
   public Long getId() {
     return id;
@@ -142,6 +149,14 @@ public class Artifact {
 
   public void setSpace(Space space) {
     this.space = space;
+  }
+
+  public List<Comment> getComments() {
+    return comments;
+  }
+
+  public void setComments(List<Comment> comments) {
+    this.comments = comments;
   }
 
   @Override
