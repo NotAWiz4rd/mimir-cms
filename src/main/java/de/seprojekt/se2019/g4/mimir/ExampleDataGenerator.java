@@ -50,23 +50,14 @@ public class ExampleDataGenerator implements CommandLineRunner {
         User user1 = userService.create("thellmann", "t.hellmann@ostfalia.de");
         User user2 = userService.create("jbark", "jo.bark@ostfalia.de");
 
-        Folder root = folderService.create(null, "thellmann");
-        Space space = spaceService.create("thellmann", root, () -> "thellmann");
-        root.setSpace(space);
-        folderService.update(root);
+        Space space = spaceService.create("thellmann", () -> "thellmann");
+        Space space2 = spaceService.create("jbark", () -> "jbark");
 
-        Folder root2 = folderService.create(null, "jbark");
-        Space space2 = spaceService.create("jbark", root2, () -> "jbark");
-        root2.setSpace(space2);
-        folderService.update(root2);
-
-        Folder sharedRoot = folderService.create(null, "shared");
-        Space sharedSpace = spaceService.create("shared", sharedRoot, () -> "thellmann");
-        sharedRoot.setSpace(sharedSpace);
-        folderService.update(sharedRoot);
+        Space sharedSpace = spaceService.create("shared", () -> "thellmann");
         userService.addUserToSpace(user2, sharedSpace);
 
-        Folder task = folderService.create(folderService.findByParentFolderAndDisplayName(null, "shared").get(), "Aufgabe 📬");
+        Folder sharedRoot = folderService.findByParentFolderAndDisplayName(null, "shared").get();
+        Folder task = folderService.create(sharedRoot, "Aufgabe 📬");
 
         uploadFile(sharedRoot, "Innenhof.jpg", MediaType.IMAGE_JPEG, "example_data/innenhof.jpg");
         uploadFile(task, "SE-Projekt Aufgabe.html", MediaType.TEXT_HTML, "example_data/aufgabenstellung.html");
@@ -84,7 +75,7 @@ public class ExampleDataGenerator implements CommandLineRunner {
      */
     private void uploadFile(Folder parentFolder, String name, MediaType mediaType, String systemPath) throws IOException {
         MultipartFile multipartFile = new ExampleMultipartFile(name, mediaType, new ClassPathResource(systemPath));
-        artifactService.upload(name, multipartFile, parentFolder, () -> "thellmann");
+        artifactService.upload(name, multipartFile, parentFolder);
         LOGGER.info("Added artifact '{}'", name);
     }
 }

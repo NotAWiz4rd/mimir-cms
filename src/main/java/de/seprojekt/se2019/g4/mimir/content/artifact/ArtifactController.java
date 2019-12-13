@@ -3,8 +3,8 @@ package de.seprojekt.se2019.g4.mimir.content.artifact;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
-import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
 import de.seprojekt.se2019.g4.mimir.security.JwtTokenProvider;
+import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
@@ -35,7 +35,7 @@ public class ArtifactController {
     private ArtifactService artifactService;
     private FolderService folderService;
     private JwtTokenProvider jwtTokenProvider;
-    private SpaceService spaceService;
+    private UserService userService;
 
     /**
      * The parameters will be autowired by Spring.
@@ -43,11 +43,15 @@ public class ArtifactController {
      * @param artifactService
      * @param folderService
      */
-    public ArtifactController(ArtifactService artifactService, FolderService folderService, JwtTokenProvider jwtTokenProvider, SpaceService spaceService) {
+    public ArtifactController(
+            ArtifactService artifactService,
+            FolderService folderService,
+            JwtTokenProvider jwtTokenProvider,
+            UserService userService) {
         this.artifactService = artifactService;
         this.folderService = folderService;
         this.jwtTokenProvider = jwtTokenProvider;
-        this.spaceService = spaceService;
+        this.userService = userService;
     }
 
     /**
@@ -62,7 +66,7 @@ public class ArtifactController {
         if (!artifact.isPresent()) {
             return ResponseEntity.notFound().build();
         }
-        if (!spaceService.isAuthorizedForSpace(artifact.get().getSpace(), principal)){
+        if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), principal)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok().body(artifact.get());
@@ -81,7 +85,7 @@ public class ArtifactController {
         if (artifact.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        if (!spaceService.isAuthorizedForSpace(artifact.get().getSpace(), principal)){
+        if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), principal)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok().body(jwtTokenProvider.generateShareToken(artifact.get().getId(), Artifact.TYPE_IDENTIFIER, expirationMs));
@@ -104,7 +108,7 @@ public class ArtifactController {
         if (artifact.isEmpty()) {
             ResponseEntity.notFound().build();
         }
-        if (!spaceService.isAuthorizedForSpace(artifact.get().getSpace(), () -> jwtTokenProvider.getPayload(token, "sub"))){
+        if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), () -> jwtTokenProvider.getPayload(token, "sub"))){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         HttpHeaders headers = new HttpHeaders();
@@ -145,10 +149,10 @@ public class ArtifactController {
         if (file == null || file.getContentType() == null || file.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
-        if (!spaceService.isAuthorizedForSpace(parentFolder.get().getSpace(), principal)){
+        if (!userService.isAuthorizedForSpace(parentFolder.get().getSpace(), principal)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return ResponseEntity.ok().body(artifactService.upload(name, file, parentFolder.get(), principal));
+        return ResponseEntity.ok().body(artifactService.upload(name, file, parentFolder.get()));
     }
 
     /**
@@ -164,7 +168,7 @@ public class ArtifactController {
         if (artifactOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        if (!spaceService.isAuthorizedForSpace(artifactOptional.get().getSpace(), principal)){
+        if (!userService.isAuthorizedForSpace(artifactOptional.get().getSpace(), principal)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         if (StringUtils.isEmpty(name)) {
@@ -187,7 +191,7 @@ public class ArtifactController {
         if (artifact.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        if (!spaceService.isAuthorizedForSpace(artifact.get().getSpace(), principal)){
+        if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), principal)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         artifactService.delete(artifact.get());

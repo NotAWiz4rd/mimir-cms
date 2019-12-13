@@ -4,6 +4,9 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import de.seprojekt.se2019.g4.mimir.content.space.Space;
+import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
+import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import java.security.Principal;
 import java.util.zip.ZipInputStream;
 
@@ -24,6 +27,12 @@ import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
 @Transactional
 public class FolderServiceTest {
     @Autowired
+    UserService userService;
+
+    @Autowired
+    SpaceService spaceService;
+
+    @Autowired
     FolderService folderService;
 
     @Autowired
@@ -31,14 +40,17 @@ public class FolderServiceTest {
 
     @Test
     public void shouldDownloadFolderAsZip() throws Exception {
-        var parentFolder = folderService.create(null, "folder1");
+        userService.create("testUser", "test@mail.test");
+        var space = spaceService.create("test", () -> "testUser");
+        var parentFolder = folderService.create(space.getRootFolder(), "folder1");
+
+        parentFolder.setSpace(space);
+        folderService.update(parentFolder);
         artifactService.upload(
             "file1.txt",
             new MockMultipartFile("file1.txt", "file1.txt", "text/plain", "foobar".getBytes()),
-            parentFolder,
-            new Principal(){
-                @Override public String getName() { return "testuser"; }
-            });
+            parentFolder
+        );
 
         var zip = folderService.zip(parentFolder);
         var in = new ZipInputStream(zip);

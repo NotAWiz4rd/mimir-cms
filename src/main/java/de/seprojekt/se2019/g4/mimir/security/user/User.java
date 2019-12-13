@@ -29,6 +29,7 @@ public class User {
 
   @ManyToMany
   @JoinColumn
+  @NotNull
   private List<Space> spaces;
 
   public Long getId() {

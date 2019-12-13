@@ -2,6 +2,7 @@ package de.seprojekt.se2019.g4.mimir.security.user;
 
 import de.seprojekt.se2019.g4.mimir.content.space.Space;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ public class UserService {
     User user = new User();
     user.setName(name);
     user.setMail(mail);
+    user.setSpaces(new ArrayList<>());
     return userRepository.save(user);
   }
 
@@ -73,10 +75,34 @@ public class UserService {
     }
   }
 
+  /**
+   * Adds user to this space
+   *
+   * @param user
+   * @param space
+   * @return
+   */
   @Transactional
   public User addUserToSpace(User user, Space space) {
     user = this.findByName(user.getName()).get();
     user.getSpaces().add(space);
     return this.update(user);
   }
+
+  /**
+   * Check if user is authorized for space
+   *
+   * @param space
+   * @param principal
+   * @return
+   */
+  @Transactional
+  public boolean isAuthorizedForSpace(Space space, Principal principal) {
+    Optional<User> optionalUser = this.findByName(principal.getName());
+    if(optionalUser.isEmpty()) {
+      return false;
+    }
+    return optionalUser.get().getSpaces().contains(space);
+  }
+
 }
