@@ -104,7 +104,7 @@ public class FolderController {
         if (folder.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        if (!spaceService.isAuthorizedForSpace(folder.get().getSpace(), () -> jwtTokenProvider.getUserName(token))){
+        if (!spaceService.isAuthorizedForSpace(folder.get().getSpace(), () -> jwtTokenProvider.getPayload(token, "sub"))){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 

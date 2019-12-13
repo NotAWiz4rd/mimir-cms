@@ -3,7 +3,6 @@ package de.seprojekt.se2019.g4.mimir.content.artifact;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
-import de.seprojekt.se2019.g4.mimir.content.space.Space;
 import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
 import de.seprojekt.se2019.g4.mimir.security.JwtTokenProvider;
 import java.io.IOException;
@@ -79,8 +78,11 @@ public class ArtifactController {
     public ResponseEntity<String> getShareToken(@PathVariable long id, @RequestParam(name = "expiration", required = false) Integer expirationMs, Principal principal)
         throws JsonProcessingException {
         Optional<Artifact> artifact = artifactService.findById(id);
-        if (!artifact.isPresent()) {
+        if (artifact.isEmpty()) {
             return ResponseEntity.notFound().build();
+        }
+        if (!spaceService.isAuthorizedForSpace(artifact.get().getSpace(), principal)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok().body(jwtTokenProvider.generateShareToken(artifact.get().getId(), Artifact.TYPE_IDENTIFIER, expirationMs));
     }
@@ -102,7 +104,7 @@ public class ArtifactController {
         if (artifact.isEmpty()) {
             ResponseEntity.notFound().build();
         }
-        if (!spaceService.isAuthorizedForSpace(artifact.get().getSpace(), () -> jwtTokenProvider.getUserName(token))){
+        if (!spaceService.isAuthorizedForSpace(artifact.get().getSpace(), () -> jwtTokenProvider.getPayload(token, "sub"))){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         HttpHeaders headers = new HttpHeaders();
