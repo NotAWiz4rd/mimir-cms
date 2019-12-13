@@ -2,16 +2,13 @@ package de.seprojekt.se2019.g4.mimir.content.artifact;
 
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
-import de.seprojekt.se2019.g4.mimir.content.space.Space;
 import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.Thumbnail;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.ThumbnailGenerator;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.ThumbnailRepository;
-import de.seprojekt.se2019.g4.mimir.security.user.User;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +17,7 @@ import org.apache.tika.config.TikaConfig;
 import org.apache.tika.mime.MimeTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +38,7 @@ public class ArtifactService {
     private ThumbnailGenerator thumbnailGenerator;
     private ThumbnailRepository thumbnailRepository;
     private SpaceService spaceService;
+    private FolderService folderService;
 
     /**
      * The parameters will be autowired by Spring.
@@ -47,12 +46,17 @@ public class ArtifactService {
      * @param artifactRepository
      * @param thumbnailGenerator
      */
-    public ArtifactService(ArtifactRepository artifactRepository, ThumbnailRepository thumbnailRepository,
-        ThumbnailGenerator thumbnailGenerator, SpaceService spaceService) {
+    public ArtifactService(
+            ArtifactRepository artifactRepository,
+            ThumbnailRepository thumbnailRepository,
+            ThumbnailGenerator thumbnailGenerator,
+            SpaceService spaceService,
+            @Lazy FolderService folderService) {
         this.artifactRepository = artifactRepository;
         this.thumbnailRepository = thumbnailRepository;
         this.thumbnailGenerator = thumbnailGenerator;
         this.spaceService = spaceService;
+        this.folderService = folderService;
     }
 
     /**
@@ -134,15 +138,11 @@ public class ArtifactService {
      * @param displayName
      * @param file
      * @param parentFolder
-     * @param principal
      * @return
      * @throws IOException
      */
     @Transactional
-    public Artifact upload(String displayName, MultipartFile file, Folder parentFolder, Principal principal) throws IOException {
-        // TODO CHANGE AFTER USER MANAGEMENT IMPLEMENTATION
-        principal = () -> "ROOT-USER";
-
+    public Artifact upload(String displayName, MultipartFile file, Folder parentFolder) throws IOException {
         Artifact artifact = new Artifact();
         artifact.setName(displayName);
         artifact.setParentFolder(parentFolder);
@@ -151,7 +151,7 @@ public class ArtifactService {
         // update metadata of artifact
         MediaType contentType = MediaType.valueOf(file.getContentType());
         artifact.setContentType(contentType);
-        artifact.setSpace(spaceService.findByRootFolder(getRootFolder(parentFolder)).get());
+        artifact.setSpace(spaceService.findByRootFolder(folderService.getRootFolder(parentFolder)).get());
 
         // save artifact binary data
         try (InputStream inputStream = file.getInputStream()) {
@@ -227,16 +227,4 @@ public class ArtifactService {
         }
     }
 
-    /**
-     * returns root folder for this folder
-     * @param folder
-     * @return
-     */
-    public Folder getRootFolder(Folder folder) {
-      if(folder == null || folder.getParentFolder() == null) {
-        return folder;
-      } else {
-        return getRootFolder(folder.getParentFolder());
-      }
-    }
 }

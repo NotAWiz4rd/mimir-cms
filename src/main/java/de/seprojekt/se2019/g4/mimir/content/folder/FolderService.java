@@ -33,7 +33,10 @@ public class FolderService {
      * @param folderRepository
      * @param artifactService
      */
-    public FolderService(FolderRepository folderRepository, ArtifactService artifactService, SpaceService spaceService) {
+    public FolderService(
+            FolderRepository folderRepository,
+            ArtifactService artifactService,
+            SpaceService spaceService) {
         this.folderRepository = folderRepository;
         this.artifactService = artifactService;
         this.spaceService = spaceService;
@@ -85,7 +88,7 @@ public class FolderService {
         if(parentFolder == null) {
             folder.setSpace(null);
         } else {
-            folder.setSpace(this.spaceService.findByRootFolder(this.artifactService.getRootFolder(parentFolder)).get());
+            folder.setSpace(this.spaceService.findByRootFolder(this.getRootFolder(parentFolder)).get());
         }
         return folderRepository.save(folder);
     }
@@ -256,5 +259,17 @@ public class FolderService {
         folderRepository.delete(this.update(folder));
     }
 
+    /**
+     * returns root folder for this folder
+     * @param folder
+     * @return
+     */
+    public Folder getRootFolder(Folder folder) {
+        if(folder == null || folder.getParentFolder() == null) {
+            return folder;
+        } else {
+            return getRootFolder(folder.getParentFolder());
+        }
+    }
 
 }

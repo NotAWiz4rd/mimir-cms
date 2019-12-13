@@ -1,12 +1,14 @@
 package de.seprojekt.se2019.g4.mimir.content.space;
 
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
+import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
 import de.seprojekt.se2019.g4.mimir.security.user.User;
 import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import java.security.Principal;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,7 @@ public class SpaceService {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SpaceService.class);
     private SpaceRepository spaceRepository;
+    private FolderService folderService;
     private UserService userService;
 
     /**
@@ -22,9 +25,13 @@ public class SpaceService {
      *
      * @param spaceRepository
      */
-    public SpaceService(SpaceRepository spaceRepository, UserService userService) {
+    public SpaceService(
+          SpaceRepository spaceRepository,
+          UserService userService,
+          @Lazy FolderService folderService) {
         this.spaceRepository = spaceRepository;
         this.userService = userService;
+        this.folderService = folderService;
     }
 
     /**
@@ -47,7 +54,6 @@ public class SpaceService {
         return this.spaceRepository.findByRootFolder(folder);
     }
 
-
     /**
      * Update a space
      *
@@ -63,17 +69,21 @@ public class SpaceService {
      * Return new space
      *
      * @param name
-     * @param rootFolder
      * @param principal owner
      * @return
      */
     @Transactional
-    public Space create(String name, Folder rootFolder, Principal principal) {
+    public Space create(String name, Principal principal) {
+        Folder rootFolder = folderService.create(null, name);
+
         Space space = new Space();
         space.setName(name);
         space.setRootFolder(rootFolder);
 
         space = spaceRepository.save(space);
+
+        rootFolder.setSpace(space);
+        this.folderService.update(rootFolder);
 
         User user = userService.findByName(principal.getName()).get();
         user.getSpaces().add(space);
@@ -88,23 +98,13 @@ public class SpaceService {
      */
     @Transactional
     public void delete(Space space) {
-        this.spaceRepository.delete(space);
-    }
+        Folder rootFolder = space.getRootFolder();
+        space.setRootFolder(null);
+        space = this.update(space);
 
-    /**
-     * Check if user is authorized for space
-     *
-     * @param space
-     * @param principal
-     * @return
-     */
-    @Transactional
-    public boolean isAuthorizedForSpace(Space space, Principal principal) {
-        Optional<User> optionalUser = this.userService.findByName(principal.getName());
-        if(optionalUser.isEmpty()) {
-            return false;
-        }
-        return optionalUser.get().getSpaces().contains(space);
+        userService.removeAllFromSpace(space);
+        folderService.delete(rootFolder);
+        this.spaceRepository.delete(space);
     }
 
 }

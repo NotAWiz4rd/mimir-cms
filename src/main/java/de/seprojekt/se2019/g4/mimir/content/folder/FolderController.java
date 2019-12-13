@@ -1,9 +1,8 @@
 package de.seprojekt.se2019.g4.mimir.content.folder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactService;
-import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
 import de.seprojekt.se2019.g4.mimir.security.JwtTokenProvider;
+import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
@@ -32,21 +31,21 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class FolderController {
     private final static Logger LOGGER = LoggerFactory.getLogger(FolderController.class);
     private FolderService folderService;
-    private ArtifactService artifactService;
     private JwtTokenProvider jwtTokenProvider;
-    private SpaceService spaceService;
+    private UserService userService;
 
     /**
      * The parameters will be autowired by Spring.
      *
      * @param folderService
-     * @param artifactService
      */
-    public FolderController(FolderService folderService, ArtifactService artifactService, JwtTokenProvider jwtTokenProvider, SpaceService spaceService) {
+    public FolderController(
+            FolderService folderService,
+            JwtTokenProvider jwtTokenProvider,
+            UserService userService) {
         this.folderService = folderService;
-        this.artifactService = artifactService;
         this.jwtTokenProvider = jwtTokenProvider;
-        this.spaceService = spaceService;
+        this.userService = userService;
     }
 
     /**
@@ -61,7 +60,7 @@ public class FolderController {
         if (folder.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        if (!spaceService.isAuthorizedForSpace(folder.get().getSpace(), principal)){
+        if (!userService.isAuthorizedForSpace(folder.get().getSpace(), principal)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         FolderDTO folderDTO = folderService.getFolderDTOWithTree(folder.get());
@@ -81,7 +80,7 @@ public class FolderController {
         if (folder.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        if (!spaceService.isAuthorizedForSpace(folder.get().getSpace(), principal)){
+        if (!userService.isAuthorizedForSpace(folder.get().getSpace(), principal)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok().body(jwtTokenProvider.generateShareToken(folder.get().getId(), Folder.TYPE_IDENTIFIER, expirationMs));
@@ -104,7 +103,7 @@ public class FolderController {
         if (folder.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        if (!spaceService.isAuthorizedForSpace(folder.get().getSpace(), () -> jwtTokenProvider.getPayload(token, "sub"))){
+        if (!userService.isAuthorizedForSpace(folder.get().getSpace(), () -> jwtTokenProvider.getPayload(token, "sub"))){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -134,7 +133,7 @@ public class FolderController {
         if (parentFolder.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        if (!spaceService.isAuthorizedForSpace(parentFolder.get().getSpace(), principal)){
+        if (!userService.isAuthorizedForSpace(parentFolder.get().getSpace(), principal)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         if (StringUtils.isEmpty(name)) {
@@ -159,7 +158,7 @@ public class FolderController {
         if (folderOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        if (!spaceService.isAuthorizedForSpace(folderOptional.get().getSpace(), principal)){
+        if (!userService.isAuthorizedForSpace(folderOptional.get().getSpace(), principal)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         if (StringUtils.isEmpty(name)) {
@@ -185,7 +184,7 @@ public class FolderController {
         if (folder.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        if (!spaceService.isAuthorizedForSpace(folder.get().getSpace(), principal)){
+        if (!userService.isAuthorizedForSpace(folder.get().getSpace(), principal)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         if (force == null && !folderService.isEmpty(folder.get())) {
