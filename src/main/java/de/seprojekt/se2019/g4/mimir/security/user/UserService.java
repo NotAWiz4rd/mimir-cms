@@ -72,4 +72,11 @@ public class UserService {
       this.update(user);
     }
   }
+
+  @Transactional
+  public User addUserToSpace(User user, Space space) {
+    user = this.findByName(user.getName()).get();
+    user.getSpaces().add(space);
+    return this.update(user);
+  }
 }
