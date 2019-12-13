@@ -60,7 +60,6 @@ public class SpaceController {
         if (!spaceService.isAuthorizedForSpace(space.get(), principal)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        spaceService.isAuthorizedForSpace(space.get(), principal);
         SpaceDTO spaceDTO = new SpaceDTO(space.get());
         spaceDTO.setRoot(folderService.getFolderDTOWithTree(space.get().getRootFolder()));
         return ResponseEntity.ok().body(spaceDTO);
