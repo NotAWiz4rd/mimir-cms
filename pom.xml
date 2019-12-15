@@ -125,6 +125,7 @@
         <license.outputDirectory>${basedir}</license.outputDirectory> <!-- mvn license:add-third-party -->
         <licensesOutputDirectory>${basedir}/licenses</licensesOutputDirectory>
         <license.fileTemplate>${basedir}/src/license/third-party-file.ftl</license.fileTemplate>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
 
     <build>
