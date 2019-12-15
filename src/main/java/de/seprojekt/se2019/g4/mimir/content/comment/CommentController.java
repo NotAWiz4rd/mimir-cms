@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactRepository;
+import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 
 @RestController
 public class CommentController {
@@ -24,18 +25,31 @@ public class CommentController {
     private ArtifactRepository artifactRepository;
     @Autowired
     private CommentRepository commentRepository;
+    @Autowired
+    private UserService userService;
 
     @PostMapping
     public Comment create(Principal principal, @Valid @RequestBody CreateCommentDto comment) throws IOException {
         return artifactRepository.findById(comment.getArtifactId())
-            .map(artifact -> commentRepository.save(
-                new Comment(artifact, comment.getText(), principal.getName(), Instant.now())))
+            .map(artifact -> {
+                if (!userService.isAuthorizedForSpace(artifact.getSpace(), principal)) {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User has no access to space");
+                }
+                return commentRepository.save(new Comment(artifact, comment.getText(), principal.getName(), Instant.now()));
+            })
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Artifact does not exist"));
     }
 
     @GetMapping
-    public Collection<Comment> list(@RequestParam("artifactId") Long artifactId) throws IOException {
-        return commentRepository.findByArtifactId(artifactId);
+    public Collection<Comment> list(Principal principal, @RequestParam("artifactId") Long artifactId) throws IOException {
+        return artifactRepository.findById(artifactId)
+            .map(artifact -> {
+                if (!userService.isAuthorizedForSpace(artifact.getSpace(), principal)) {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User has no access to space");
+                }
+                return commentRepository.findByArtifactId(artifactId);
+            })
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Artifact does not exist"));
     }
 
 }
