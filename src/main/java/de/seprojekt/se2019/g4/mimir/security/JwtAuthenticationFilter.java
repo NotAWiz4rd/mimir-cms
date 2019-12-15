@@ -1,50 +1,49 @@
 package de.seprojekt.se2019.g4.mimir.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.HashMap;
+import javax.servlet.FilterChain;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import java.io.IOException;
-import java.util.HashMap;
-
-import javax.servlet.FilterChain;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-    private final AuthenticationManager authenticationManager;
 
-    private JwtTokenProvider jwtTokenProvider;
+  private final AuthenticationManager authenticationManager;
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager,
-                                   ApplicationContext ctx) {
-        this.authenticationManager = authenticationManager;
-        setFilterProcessesUrl("/login");
-        this.jwtTokenProvider = ctx.getBean(JwtTokenProvider.class);
-    }
+  private JwtTokenProvider jwtTokenProvider;
 
-    @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
-        var username = request.getParameter("username");
-        var password = request.getParameter("password");
-        var authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+  public JwtAuthenticationFilter(AuthenticationManager authenticationManager,
+      ApplicationContext ctx) {
+    this.authenticationManager = authenticationManager;
+    setFilterProcessesUrl("/login");
+    this.jwtTokenProvider = ctx.getBean(JwtTokenProvider.class);
+  }
 
-        return authenticationManager.authenticate(authenticationToken);
-    }
+  @Override
+  public Authentication attemptAuthentication(HttpServletRequest request,
+      HttpServletResponse response) {
+    var username = request.getParameter("username");
+    var password = request.getParameter("password");
+    var authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
 
-    @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                            FilterChain filterChain, Authentication authentication) throws IOException {
-        var token = jwtTokenProvider.generateToken(authentication);
-        var om = new ObjectMapper();
-        var map = new HashMap<String, String>();
-        map.put("token", token);
-        var json = om.writeValueAsString(map);
-        response.getWriter().write(json);
-        response.flushBuffer();
-    }
+    return authenticationManager.authenticate(authenticationToken);
+  }
+
+  @Override
+  protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+      FilterChain filterChain, Authentication authentication) throws IOException {
+    var token = jwtTokenProvider.generateToken(authentication);
+    var om = new ObjectMapper();
+    var map = new HashMap<String, String>();
+    map.put("token", token);
+    var json = om.writeValueAsString(map);
+    response.getWriter().write(json);
+    response.flushBuffer();
+  }
 }

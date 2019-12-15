@@ -30,9 +30,6 @@ public class UserService {
 
   /**
    * Return user with given name
-   *
-   * @param name
-   * @return
    */
   public Optional<User> findByName(String name) {
     return this.userRepository.findByName(name);
@@ -41,9 +38,6 @@ public class UserService {
 
   /**
    * Update a user
-   *
-   * @param user
-   * @return
    */
   @Transactional
   public User update(User user) {
@@ -52,9 +46,6 @@ public class UserService {
 
   /**
    * returns number of users for this space
-   *
-   * @param space
-   * @return
    */
   @Transactional
   public Integer getNumberOfSpaceUsers(Space space) {
@@ -63,13 +54,10 @@ public class UserService {
 
   /**
    * removes all users from this space
-   *
-   * @param space
-   * @return
    */
   @Transactional
   public void removeAllFromSpace(Space space) {
-    for(User user: this.userRepository.findAllBySpacesContains(space)) {
+    for (User user : this.userRepository.findAllBySpacesContains(space)) {
       user.getSpaces().remove(space);
       this.update(user);
     }
@@ -77,10 +65,6 @@ public class UserService {
 
   /**
    * Adds user to this space
-   *
-   * @param user
-   * @param space
-   * @return
    */
   @Transactional
   public User addUserToSpace(User user, Space space) {
@@ -91,15 +75,11 @@ public class UserService {
 
   /**
    * Check if user is authorized for space
-   *
-   * @param space
-   * @param principal
-   * @return
    */
   @Transactional
   public boolean isAuthorizedForSpace(Space space, Principal principal) {
     Optional<User> optionalUser = this.findByName(principal.getName());
-    if(optionalUser.isEmpty()) {
+    if (optionalUser.isEmpty()) {
       return false;
     }
     return optionalUser.get().getSpaces().contains(space);

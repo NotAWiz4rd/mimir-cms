@@ -15,96 +15,82 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class SpaceService {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(SpaceService.class);
-    private SpaceRepository spaceRepository;
-    private FolderService folderService;
-    private UserService userService;
+  private final static Logger LOGGER = LoggerFactory.getLogger(SpaceService.class);
+  private SpaceRepository spaceRepository;
+  private FolderService folderService;
+  private UserService userService;
 
-    /**
-     * The parameters will be autowired by Spring.
-     *
-     * @param spaceRepository
-     */
-    public SpaceService(
-          SpaceRepository spaceRepository,
-          UserService userService,
-          @Lazy FolderService folderService) {
-        this.spaceRepository = spaceRepository;
-        this.userService = userService;
-        this.folderService = folderService;
-    }
+  /**
+   * The parameters will be autowired by Spring.
+   */
+  public SpaceService(
+      SpaceRepository spaceRepository,
+      UserService userService,
+      @Lazy FolderService folderService) {
+    this.spaceRepository = spaceRepository;
+    this.userService = userService;
+    this.folderService = folderService;
+  }
 
-    /**
-     * Return space with given id
-     *
-     * @param id
-     * @return
-     */
-    public Optional<Space> findById(Long id) {
-        return this.spaceRepository.findById(id);
-    }
+  /**
+   * Return space with given id
+   */
+  public Optional<Space> findById(Long id) {
+    return this.spaceRepository.findById(id);
+  }
 
-    /**
-     * Return space with given root folder
-     *
-     * @param folder
-     * @return
-     */
-    public Optional<Space> findByRootFolder(Folder folder) {
-        return this.spaceRepository.findByRootFolder(folder);
-    }
+  /**
+   * Return space with given root folder
+   */
+  public Optional<Space> findByRootFolder(Folder folder) {
+    return this.spaceRepository.findByRootFolder(folder);
+  }
 
-    /**
-     * Update a space
-     *
-     * @param space
-     * @return
-     */
-    @Transactional
-    public Space update(Space space) {
-        return spaceRepository.save(space);
-    }
+  /**
+   * Update a space
+   */
+  @Transactional
+  public Space update(Space space) {
+    return spaceRepository.save(space);
+  }
 
-    /**
-     * Return new space
-     *
-     * @param name
-     * @param principal owner
-     * @return
-     */
-    @Transactional
-    public Space create(String name, Principal principal) {
-        Folder rootFolder = folderService.create(null, name);
+  /**
+   * Return new space
+   *
+   * @param principal owner
+   */
+  @Transactional
+  public Space create(String name, Principal principal) {
+    Folder rootFolder = folderService.create(null, name);
 
-        Space space = new Space();
-        space.setName(name);
-        space.setRootFolder(rootFolder);
+    Space space = new Space();
+    space.setName(name);
+    space.setRootFolder(rootFolder);
 
-        space = spaceRepository.save(space);
+    space = spaceRepository.save(space);
 
-        rootFolder.setSpace(space);
-        this.folderService.update(rootFolder);
+    rootFolder.setSpace(space);
+    this.folderService.update(rootFolder);
 
-        User user = userService.findByName(principal.getName()).get();
-        user.getSpaces().add(space);
-        userService.update(user);
+    User user = userService.findByName(principal.getName()).get();
+    user.getSpaces().add(space);
+    userService.update(user);
 
-        return space;
-    }
+    return space;
+  }
 
-    /**
-     * Deletes a space
-     * @param space
-     */
-    @Transactional
-    public void delete(Space space) {
-        Folder rootFolder = space.getRootFolder();
-        space.setRootFolder(null);
-        space = this.update(space);
+  /**
+   * Deletes a space
+   */
+  @Transactional
+  public void delete(Space space) {
+    Folder rootFolder = space.getRootFolder();
+    space.setRootFolder(null);
+    space = this.update(space);
 
-        userService.removeAllFromSpace(space);
-        folderService.delete(rootFolder);
-        this.spaceRepository.delete(space);
-    }
+    userService.removeAllFromSpace(space);
+    folderService.delete(rootFolder);
+    this.spaceRepository.delete(space);
+  }
 
 }
