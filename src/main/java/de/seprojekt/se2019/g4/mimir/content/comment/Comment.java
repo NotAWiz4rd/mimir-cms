@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import de.seprojekt.se2019.g4.mimir.content.artifact.Artifact;
+import de.seprojekt.se2019.g4.mimir.security.user.User;
 
 @Entity
 public class Comment {
@@ -39,8 +40,9 @@ public class Comment {
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
     @JsonIdentityReference(alwaysAsId = true)
     @JsonProperty("authorId")
-    @Column
-    private String author; // TODO use user class
+    @JoinColumn
+    @ManyToOne
+    private User author;
 
     @Column
     private Instant creationDate;
@@ -48,7 +50,7 @@ public class Comment {
     public Comment() {
     }
 
-    public Comment(Artifact artifact, String text, String author, Instant creationDate) {
+    public Comment(Artifact artifact, String text, User author, Instant creationDate) {
       this.artifact = artifact;
       this.text = text;
       this.author = author;
@@ -79,11 +81,11 @@ public class Comment {
         this.text = text;
     }
 
-    public String getAuthor() {
+    public User getAuthor() {
         return author;
     }
 
-    public void setAuthor(String author) {
+    public void setAuthor(User author) {
         this.author = author;
     }
 

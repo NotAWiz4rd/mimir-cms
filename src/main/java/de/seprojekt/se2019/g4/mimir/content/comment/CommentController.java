@@ -35,7 +35,8 @@ public class CommentController {
                 if (!userService.isAuthorizedForSpace(artifact.getSpace(), principal)) {
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User has no access to space");
                 }
-                return commentRepository.save(new Comment(artifact, comment.getText(), principal.getName(), Instant.now()));
+                var user = userService.findByName(principal.getName()).get();
+                return commentRepository.save(new Comment(artifact, comment.getText(), user, Instant.now()));
             })
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Artifact does not exist"));
     }
