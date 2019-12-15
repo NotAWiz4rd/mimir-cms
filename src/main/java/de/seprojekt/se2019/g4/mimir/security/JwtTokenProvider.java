@@ -19,79 +19,82 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class JwtTokenProvider {
-    private static final Logger log = LoggerFactory.getLogger(JwtAuthorizationFilter.class);
 
-    @Value("${app.jwtSecret}")
-    private String jwtSecret;
+  private static final Logger log = LoggerFactory.getLogger(JwtAuthorizationFilter.class);
 
-    @Value("${app.jwtExpirationMs}")
-    private int jwtExpirationMs;
+  @Value("${app.jwtSecret}")
+  private String jwtSecret;
 
-    public String generateToken(Authentication auth) {
-        var user = ((OwnUserDetails) auth.getPrincipal());
-        return Jwts.builder()
-                .signWith(key())
-                .setSubject(user.getUsername())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-                .compact();
+  @Value("${app.jwtExpirationMs}")
+  private int jwtExpirationMs;
+
+  public String generateToken(Authentication auth) {
+    var user = ((OwnUserDetails) auth.getPrincipal());
+    return Jwts.builder()
+        .signWith(key())
+        .setSubject(user.getUsername())
+        .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+        .compact();
+  }
+
+  public String generateShareToken(Long sharedEntityId, String sharedEntityType,
+      Integer expirationMs)
+      throws JsonProcessingException {
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("sub", JwtPrincipal.shareLinkUserName);
+    claims.put("id", String.valueOf(sharedEntityId));
+    claims.put("type", sharedEntityType);
+
+    String token = this.generateShareTokenWithClaims(claims, expirationMs);
+    ObjectMapper om = new ObjectMapper();
+    Map<String, String> map = new HashMap<>();
+    map.put("token", token);
+
+    return om.writeValueAsString(map);
+  }
+
+  private String generateShareTokenWithClaims(Map<String, Object> claims, Integer expirationMs) {
+    if (expirationMs == null) {
+      expirationMs = jwtExpirationMs;
     }
 
-    public String generateShareToken(Long sharedEntityId, String sharedEntityType, Integer expirationMs)
-        throws JsonProcessingException {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", JwtPrincipal.shareLinkUserName);
-        claims.put("id", String.valueOf(sharedEntityId));
-        claims.put("type", sharedEntityType);
+    return Jwts.builder()
+        .signWith(key())
+        .setClaims(claims)
+        .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
+        .compact();
+  }
 
-        String token = this.generateShareTokenWithClaims(claims, expirationMs);
-        ObjectMapper om = new ObjectMapper();
-        Map<String, String> map = new HashMap<>();
-        map.put("token", token);
+  private Key key() {
+    return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+  }
 
-        return om.writeValueAsString(map);
+  public boolean validateToken(String token) {
+    try {
+      Jwts.parser()
+          .setSigningKey(key())
+          .parseClaimsJws(token);
+      return true;
+    } catch (ExpiredJwtException exception) {
+      log.warn("Request to parse expired JWT : {} failed : {}", token, exception.getMessage());
+    } catch (UnsupportedJwtException exception) {
+      log.warn("Request to parse unsupported JWT : {} failed : {}", token, exception.getMessage());
+    } catch (MalformedJwtException exception) {
+      log.warn("Request to parse invalid JWT : {} failed : {}", token, exception.getMessage());
+    } catch (IllegalArgumentException exception) {
+      log.warn("Request to parse empty or null JWT : {} failed : {}", token,
+          exception.getMessage());
     }
 
-    private String generateShareTokenWithClaims(Map<String, Object> claims, Integer expirationMs) {
-        if(expirationMs == null) {
-            expirationMs = jwtExpirationMs;
-        }
+    return false;
+  }
 
-        return Jwts.builder()
-            .signWith(key())
-            .setClaims(claims)
-            .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
-            .compact();
-    }
-
-    private Key key() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
-    }
-
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parser()
-                    .setSigningKey(key())
-                    .parseClaimsJws(token);
-            return true;
-        } catch (ExpiredJwtException exception) {
-            log.warn("Request to parse expired JWT : {} failed : {}", token, exception.getMessage());
-        } catch (UnsupportedJwtException exception) {
-            log.warn("Request to parse unsupported JWT : {} failed : {}", token, exception.getMessage());
-        } catch (MalformedJwtException exception) {
-            log.warn("Request to parse invalid JWT : {} failed : {}", token, exception.getMessage());
-        } catch (IllegalArgumentException exception) {
-            log.warn("Request to parse empty or null JWT : {} failed : {}", token, exception.getMessage());
-        }
-
-        return false;
-    }
-
-    public String getPayload(String token, String key) {
-        return (String) Jwts.parser()
-            .setSigningKey(key())
-            .parseClaimsJws(token)
-            .getBody()
-            .get(key);
-    }
+  public String getPayload(String token, String key) {
+    return (String) Jwts.parser()
+        .setSigningKey(key())
+        .parseClaimsJws(token)
+        .getBody()
+        .get(key);
+  }
 
 }

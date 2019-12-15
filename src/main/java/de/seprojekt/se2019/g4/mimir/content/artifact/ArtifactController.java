@@ -26,175 +26,159 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * This controller offers an HTTP interface for manipulating artifacts (e.g. deleting, creating etc.)
+ * This controller offers an HTTP interface for manipulating artifacts (e.g. deleting, creating
+ * etc.)
  */
 @Controller
 public class ArtifactController {
-    private final static Logger LOGGER = LoggerFactory.getLogger(ArtifactController.class);
 
-    private ArtifactService artifactService;
-    private FolderService folderService;
-    private JwtTokenProvider jwtTokenProvider;
-    private UserService userService;
+  private final static Logger LOGGER = LoggerFactory.getLogger(ArtifactController.class);
 
-    /**
-     * The parameters will be autowired by Spring.
-     *
-     * @param artifactService
-     * @param folderService
-     */
-    public ArtifactController(
-            ArtifactService artifactService,
-            FolderService folderService,
-            JwtTokenProvider jwtTokenProvider,
-            UserService userService) {
-        this.artifactService = artifactService;
-        this.folderService = folderService;
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.userService = userService;
+  private ArtifactService artifactService;
+  private FolderService folderService;
+  private JwtTokenProvider jwtTokenProvider;
+  private UserService userService;
+
+  /**
+   * The parameters will be autowired by Spring.
+   */
+  public ArtifactController(
+      ArtifactService artifactService,
+      FolderService folderService,
+      JwtTokenProvider jwtTokenProvider,
+      UserService userService) {
+    this.artifactService = artifactService;
+    this.folderService = folderService;
+    this.jwtTokenProvider = jwtTokenProvider;
+    this.userService = userService;
+  }
+
+  /**
+   * The user can get an artifact by calling this interface.
+   */
+  @GetMapping(value = "/artifact/{id}")
+  public ResponseEntity<Artifact> getArtifact(@PathVariable long id, Principal principal) {
+    Optional<Artifact> artifact = artifactService.findById(id);
+    if (!artifact.isPresent()) {
+      return ResponseEntity.notFound().build();
+    }
+    if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), principal)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+    return ResponseEntity.ok().body(artifact.get());
+  }
+
+  /**
+   * The user can get an JWT for sharing this artifact
+   */
+  @GetMapping(value = "/artifact/share/{id}")
+  public ResponseEntity<String> getShareToken(@PathVariable long id,
+      @RequestParam(name = "expiration", required = false) Integer expirationMs,
+      Principal principal)
+      throws JsonProcessingException {
+    Optional<Artifact> artifact = artifactService.findById(id);
+    if (artifact.isEmpty()) {
+      return ResponseEntity.notFound().build();
+    }
+    if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), principal)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+    return ResponseEntity.ok().body(jwtTokenProvider
+        .generateShareToken(artifact.get().getId(), Artifact.TYPE_IDENTIFIER, expirationMs));
+  }
+
+  /**
+   * Generate a download of an artifact when a user visit this url. Not secured by Spring Security!
+   */
+  @PostMapping(value = "/artifact/{id}/download")
+  public ResponseEntity<InputStreamResource> downloadArtifact(@PathVariable long id,
+      @RequestParam(required = true, name = "token") String token) {
+    if (!jwtTokenProvider.validateToken(token)) {
+      return ResponseEntity.status(403).build();
     }
 
-    /**
-     * The user can get an artifact by calling this interface.
-     *
-     * @param id
-     * @return
-     */
-    @GetMapping(value = "/artifact/{id}")
-    public ResponseEntity<Artifact> getArtifact(@PathVariable long id, Principal principal) {
-        Optional<Artifact> artifact = artifactService.findById(id);
-        if (!artifact.isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-        if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), principal)){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        return ResponseEntity.ok().body(artifact.get());
+    Optional<Artifact> artifact = artifactService.findById(id);
+    if (artifact.isEmpty()) {
+      ResponseEntity.notFound().build();
     }
-
-    /**
-     * The user can get an JWT for sharing this artifact
-     *
-     * @param id
-     * @return
-     */
-    @GetMapping(value = "/artifact/share/{id}")
-    public ResponseEntity<String> getShareToken(@PathVariable long id, @RequestParam(name = "expiration", required = false) Integer expirationMs, Principal principal)
-        throws JsonProcessingException {
-        Optional<Artifact> artifact = artifactService.findById(id);
-        if (artifact.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), principal)){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        return ResponseEntity.ok().body(jwtTokenProvider.generateShareToken(artifact.get().getId(), Artifact.TYPE_IDENTIFIER, expirationMs));
+    if (!userService.isAuthorizedForSpace(artifact.get().getSpace(),
+        () -> jwtTokenProvider.getPayload(token, "sub"))) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("Content-Disposition",
+        String.format("attachment; filename=\"%s\"", artifact.get().getName()));
 
-    /**
-     * Generate a download of an artifact when a user visit this url.
-     * Not secured by Spring Security!
-     *
-     * @param id
-     * @return
-     */
-    @PostMapping(value = "/artifact/{id}/download")
-    public ResponseEntity<InputStreamResource> downloadArtifact(@PathVariable long id, @RequestParam(required=true, name="token") String token) {
-        if (!jwtTokenProvider.validateToken(token)) {
-            return ResponseEntity.status(403).build();
-        }
+    InputStream inputStream = artifactService.findArtifactContent(artifact.get());
+    InputStreamResource resource = new InputStreamResource(inputStream);
+    return ResponseEntity.ok()
+        .headers(headers)
+        .contentType(artifact.get().getContentType())
+        .contentLength(artifact.get().getContentLength())
+        // InputStreamResource will close the InputStream
+        .body(resource);
+  }
 
-        Optional<Artifact> artifact = artifactService.findById(id);
-        if (artifact.isEmpty()) {
-            ResponseEntity.notFound().build();
-        }
-        if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), () -> jwtTokenProvider.getPayload(token, "sub"))){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Disposition", String.format("attachment; filename=\"%s\"", artifact.get().getName()));
-
-        InputStream inputStream = artifactService.findArtifactContent(artifact.get());
-        InputStreamResource resource = new InputStreamResource(inputStream);
-        return ResponseEntity.ok()
-                .headers(headers)
-                .contentType(artifact.get().getContentType())
-                .contentLength(artifact.get().getContentLength())
-                // InputStreamResource will close the InputStream
-                .body(resource);
+  /**
+   * The user can upload an artifact by calling this interface.
+   */
+  @PostMapping(value = "/artifact")
+  public ResponseEntity<Artifact> uploadArtifact(@RequestParam("parentId") Long parentFolderId,
+      @RequestParam("name") String name, @RequestParam("file") MultipartFile file,
+      Principal principal) throws IOException {
+    Optional<Folder> parentFolder = folderService.findById(parentFolderId);
+    if (parentFolder.isEmpty()) {
+      return ResponseEntity.status(409).build();
     }
-
-    /**
-     * The user can upload an artifact by calling this interface.
-     *
-     * @param principal
-     * @param parentFolderId
-     * @param name
-     * @param file
-     * @return
-     * @throws IOException
-     */
-    @PostMapping(value = "/artifact")
-    public ResponseEntity<Artifact> uploadArtifact(@RequestParam("parentId") Long parentFolderId, @RequestParam("name") String name, @RequestParam("file") MultipartFile file, Principal principal) throws IOException {
-        Optional<Folder> parentFolder = folderService.findById(parentFolderId);
-        if (parentFolder.isEmpty()) {
-            return ResponseEntity.status(409).build();
-        }
-        if (artifactService.existsByParentFolderAndDisplayName(parentFolder.get(), name)) {
-            return ResponseEntity.status(409).build();
-        }
-        if (StringUtils.isEmpty(name)) {
-            return ResponseEntity.badRequest().build();
-        }
-        if (file == null || file.getContentType() == null || file.isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
-        if (!userService.isAuthorizedForSpace(parentFolder.get().getSpace(), principal)){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        return ResponseEntity.ok().body(artifactService.upload(name, file, parentFolder.get()));
+    if (artifactService.existsByParentFolderAndDisplayName(parentFolder.get(), name)) {
+      return ResponseEntity.status(409).build();
     }
-
-    /**
-     * The user can rename an artifact by calling this interface
-     *
-     * @param id
-     * @param name
-     * @return
-     */
-    @PutMapping(value = "/artifact/{id}")
-    public ResponseEntity<Artifact> renameArtifact(@PathVariable long id, @RequestParam("name") String name, Principal principal) {
-        Optional<Artifact> artifactOptional = artifactService.findById(id);
-        if (artifactOptional.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        if (!userService.isAuthorizedForSpace(artifactOptional.get().getSpace(), principal)){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        if (StringUtils.isEmpty(name)) {
-            return ResponseEntity.badRequest().build();
-        }
-        Artifact artifact = artifactOptional.get();
-        artifact.setName(name);
-        return ResponseEntity.ok().body(artifactService.update(artifact));
+    if (StringUtils.isEmpty(name)) {
+      return ResponseEntity.badRequest().build();
     }
-
-    /**
-     * The user can delete an artifact by calling this interface.
-     *
-     * @param id
-     * @return
-     */
-    @DeleteMapping(value = "/artifact/{id}")
-    public ResponseEntity<String> delete(@PathVariable long id, Principal principal) {
-        Optional<Artifact> artifact = artifactService.findById(id);
-        if (artifact.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), principal)){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        artifactService.delete(artifact.get());
-        return ResponseEntity.ok().build();
+    if (file == null || file.getContentType() == null || file.isEmpty()) {
+      return ResponseEntity.badRequest().build();
     }
+    if (!userService.isAuthorizedForSpace(parentFolder.get().getSpace(), principal)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+    return ResponseEntity.ok().body(artifactService.upload(name, file, parentFolder.get()));
+  }
+
+  /**
+   * The user can rename an artifact by calling this interface
+   */
+  @PutMapping(value = "/artifact/{id}")
+  public ResponseEntity<Artifact> renameArtifact(@PathVariable long id,
+      @RequestParam("name") String name, Principal principal) {
+    Optional<Artifact> artifactOptional = artifactService.findById(id);
+    if (artifactOptional.isEmpty()) {
+      return ResponseEntity.notFound().build();
+    }
+    if (!userService.isAuthorizedForSpace(artifactOptional.get().getSpace(), principal)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+    if (StringUtils.isEmpty(name)) {
+      return ResponseEntity.badRequest().build();
+    }
+    Artifact artifact = artifactOptional.get();
+    artifact.setName(name);
+    return ResponseEntity.ok().body(artifactService.update(artifact));
+  }
+
+  /**
+   * The user can delete an artifact by calling this interface.
+   */
+  @DeleteMapping(value = "/artifact/{id}")
+  public ResponseEntity<String> delete(@PathVariable long id, Principal principal) {
+    Optional<Artifact> artifact = artifactService.findById(id);
+    if (artifact.isEmpty()) {
+      return ResponseEntity.notFound().build();
+    }
+    if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), principal)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+    artifactService.delete(artifact.get());
+    return ResponseEntity.ok().build();
+  }
 }

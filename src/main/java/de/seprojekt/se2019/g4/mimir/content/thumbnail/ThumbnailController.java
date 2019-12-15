@@ -24,68 +24,62 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class ThumbnailController {
-    private final static Logger LOGGER = LoggerFactory.getLogger(ThumbnailController.class);
-    private IconDiscoverService iconDiscoverService;
-    private ArtifactService artifactService;
-    private UserService userService;
 
-    /**
-     * The parameters will be autowired by Spring.
-     * @param iconDiscoverService
-     * @param artifactService
-     */
-    public ThumbnailController(
-            IconDiscoverService iconDiscoverService,
-            ArtifactService artifactService,
-            UserService userService) {
-        this.iconDiscoverService = iconDiscoverService;
-        this.artifactService = artifactService;
-        this.userService = userService;
-    }
+  private final static Logger LOGGER = LoggerFactory.getLogger(ThumbnailController.class);
+  private IconDiscoverService iconDiscoverService;
+  private ArtifactService artifactService;
+  private UserService userService;
 
-    /**
-     * This method will be called, when the security page will access the given url and match certain criteria.
-     * It will return the thumbnail for the artifact with the given id.
-     * @param id
-     * @return
-     */
-    @GetMapping(value = "/thumbnail/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
-    @ResponseBody
-    public ResponseEntity getThumbnail(@PathVariable Long id, Principal principal) {
-        Optional<Artifact> artifact = artifactService.findById(id);
-        if(artifact.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), principal)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        return artifactService.findThumbnail(artifact.get())
-                .map(thumbnailInputStream -> returnRealThumbnail(thumbnailInputStream, artifact.get()))
-                .orElseGet(() -> fallbackToIcon(artifact.get().getContentType()));
-    }
+  /**
+   * The parameters will be autowired by Spring.
+   */
+  public ThumbnailController(
+      IconDiscoverService iconDiscoverService,
+      ArtifactService artifactService,
+      UserService userService) {
+    this.iconDiscoverService = iconDiscoverService;
+    this.artifactService = artifactService;
+    this.userService = userService;
+  }
 
-    /**
-     * Return the real thumbnail with the correct contentType etc.
-     * @param thumbnailInputStream
-     * @return
-     */
-    private ResponseEntity returnRealThumbnail(InputStream thumbnailInputStream, Artifact artifact) {
-        return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_JPEG)
-                .contentLength(artifact.getThumbnail().getContentLength())
-                // InputStreamResource will close the InputStream
-                .body(new InputStreamResource(thumbnailInputStream));
+  /**
+   * This method will be called, when the security page will access the given url and match certain
+   * criteria. It will return the thumbnail for the artifact with the given id.
+   */
+  @GetMapping(value = "/thumbnail/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
+  @ResponseBody
+  public ResponseEntity getThumbnail(@PathVariable Long id, Principal principal) {
+    Optional<Artifact> artifact = artifactService.findById(id);
+    if (artifact.isEmpty()) {
+      return ResponseEntity.notFound().build();
     }
+    if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), principal)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+    return artifactService.findThumbnail(artifact.get())
+        .map(thumbnailInputStream -> returnRealThumbnail(thumbnailInputStream, artifact.get()))
+        .orElseGet(() -> fallbackToIcon(artifact.get().getContentType()));
+  }
 
-    /**
-     * Return the icon for the given mediaType as fallback thumbnail.
-     * @param mediaType
-     * @return
-     */
-    private ResponseEntity fallbackToIcon(MediaType mediaType) {
-        ClassPathResource resource = iconDiscoverService.loadIconFor(mediaType).orElseThrow(EntityNotFoundException::new);
-        return ResponseEntity.ok()
-                .contentType(MediaType.valueOf("image/svg+xml"))
-                .body(resource);
-    }
+  /**
+   * Return the real thumbnail with the correct contentType etc.
+   */
+  private ResponseEntity returnRealThumbnail(InputStream thumbnailInputStream, Artifact artifact) {
+    return ResponseEntity.ok()
+        .contentType(MediaType.IMAGE_JPEG)
+        .contentLength(artifact.getThumbnail().getContentLength())
+        // InputStreamResource will close the InputStream
+        .body(new InputStreamResource(thumbnailInputStream));
+  }
+
+  /**
+   * Return the icon for the given mediaType as fallback thumbnail.
+   */
+  private ResponseEntity fallbackToIcon(MediaType mediaType) {
+    ClassPathResource resource = iconDiscoverService.loadIconFor(mediaType)
+        .orElseThrow(EntityNotFoundException::new);
+    return ResponseEntity.ok()
+        .contentType(MediaType.valueOf("image/svg+xml"))
+        .body(resource);
+  }
 }

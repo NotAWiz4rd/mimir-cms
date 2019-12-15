@@ -9,25 +9,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class RegistrationController {
 
-    private MailService mailService;
+  private MailService mailService;
 
-    public RegistrationController(MailService mailService) {
-        this.mailService = mailService;
-    }
+  public RegistrationController(MailService mailService) {
+    this.mailService = mailService;
+  }
 
-    /**
-     * Sends a mail
-     *
-     * @param receiver
-     * @param text
-     * @return
-     */
-    @GetMapping(value = "/register")
-    public ResponseEntity getArtifact(@RequestParam("receiver") String receiver, @RequestParam("text") String text) {
-        if (StringUtils.isEmpty(receiver)) {
-            return ResponseEntity.badRequest().build();
-        }
-        mailService.sendMail(receiver, "Mimir-Testmail", text);
-        return ResponseEntity.ok().build();
+  /**
+   * Sends a mail
+   */
+  @GetMapping(value = "/register")
+  public ResponseEntity getArtifact(@RequestParam("receiver") String receiver,
+      @RequestParam("text") String text) {
+    if (StringUtils.isEmpty(receiver)) {
+      return ResponseEntity.badRequest().build();
     }
+    mailService.sendMail(receiver, "Mimir-Testmail", text);
+    return ResponseEntity.ok().build();
+  }
 }
