@@ -1,6 +1,11 @@
 package de.seprojekt.se2019.g4.mimir.security.user;
 
+import de.seprojekt.se2019.g4.mimir.content.artifact.Artifact;
+import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactService;
+import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
+import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
 import de.seprojekt.se2019.g4.mimir.content.space.Space;
+import de.seprojekt.se2019.g4.mimir.security.JwtPrincipal;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -14,9 +19,13 @@ public class UserService {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(UserService.class);
   private UserRepository userRepository;
+  private FolderService folderService;
+  private ArtifactService artifactService;
 
-  public UserService(UserRepository userRepository) {
+  public UserService(UserRepository userRepository, FolderService folderService, ArtifactService artifactService) {
     this.userRepository = userRepository;
+    this.folderService = folderService;
+    this.artifactService = artifactService;
   }
 
   @Transactional
@@ -83,6 +92,61 @@ public class UserService {
       return false;
     }
     return optionalUser.get().getSpaces().contains(space);
+  }
+
+  /**
+   * Check if user is authorized for folder
+   */
+  @Transactional
+  public boolean isAuthorizedForFolder(Folder folder, Principal principal) {
+    JwtPrincipal jwtPrincipal = (JwtPrincipal) principal;
+    if (jwtPrincipal.isAnonymous()) {
+      switch (jwtPrincipal.getSharedEntityType()) {
+        case Artifact.TYPE_IDENTIFIER:
+          return false;
+        case Folder.TYPE_IDENTIFIER: {
+          Optional<Folder> sharedFolder = folderService.findById(jwtPrincipal.getSharedEntityId());
+          if (sharedFolder.isEmpty()) {
+            return false;
+          }
+          return folderService.matchesOrIsChild(sharedFolder.get(), folder);
+        }
+        default:
+          return false;
+      }
+    } else {
+      return this.isAuthorizedForSpace(folder.getSpace(), principal);
+    }
+  }
+
+  /**
+   * Check if user is authorized for artifact
+   */
+  @Transactional
+  public boolean isAuthorizedForArtifact(Artifact artifact, Principal principal) {
+    JwtPrincipal jwtPrincipal = (JwtPrincipal) principal;
+    if (jwtPrincipal.isAnonymous()) {
+      switch (jwtPrincipal.getSharedEntityType()) {
+        case Artifact.TYPE_IDENTIFIER: {
+          Optional<Artifact> sharedArtifact = artifactService.findById(jwtPrincipal.getSharedEntityId());
+          if(sharedArtifact.isEmpty()) {
+            return false;
+          }
+          return sharedArtifact.get().getId() == artifact.getId();
+        }
+        case Folder.TYPE_IDENTIFIER: {
+          Optional<Folder> sharedFolder = folderService.findById(jwtPrincipal.getSharedEntityId());
+          if (sharedFolder.isEmpty()) {
+            return false;
+          }
+          return folderService.matchesOrIsChild(sharedFolder.get(), artifact.getParentFolder());
+        }
+        default:
+          return false;
+      }
+    } else {
+      return this.isAuthorizedForSpace(artifact.getSpace(), principal);
+    }
   }
 
 }
