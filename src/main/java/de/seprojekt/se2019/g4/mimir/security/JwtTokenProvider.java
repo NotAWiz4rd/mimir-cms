@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.ldap.userdetails.LdapUserDetails;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -29,7 +30,7 @@ public class JwtTokenProvider {
   private int jwtExpirationMs;
 
   public String generateToken(Authentication auth) {
-    var user = ((OwnUserDetails) auth.getPrincipal());
+    var user = ((LdapUserDetails) auth.getPrincipal());
     return Jwts.builder()
         .signWith(key())
         .setSubject(user.getUsername())
