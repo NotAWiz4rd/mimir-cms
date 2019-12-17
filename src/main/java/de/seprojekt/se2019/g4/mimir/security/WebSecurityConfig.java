@@ -14,7 +14,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
 
 /**
  * This class will configure the security and ldap security aspect of the application
@@ -78,14 +77,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   }
 
   /**
-   *
-   */
-  @Bean
-  public UserDetailsContextMapper userDetailsContextMapper() {
-    return new OwnUserDetailsContextMapper();
-  }
-
-  /**
    * Do the LDAP configuration for authenticating against a real, productive LDAP server.
    */
   private void configureLdapFromServer(AuthenticationManagerBuilder auth) throws Exception {
@@ -143,7 +134,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .userSearchBase(ldapConfig.getUserSearchBase())
         .groupSearchBase(ldapConfig.getGroupSearchBase())
         .groupSearchFilter(ldapConfig.getGroupSearchFilter())
-        .userDetailsContextMapper(userDetailsContextMapper())
         .contextSource();
   }
 }
