@@ -56,7 +56,7 @@ public class FolderController {
     if (folder.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
-    if (!userService.isAuthorizedForSpace(folder.get().getSpace(), principal)) {
+    if (!userService.isAuthorizedForFolder(folder.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
     FolderDTO folderDTO = folderService.getFolderDTOWithTree(folder.get());
@@ -75,7 +75,7 @@ public class FolderController {
     if (folder.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
-    if (!userService.isAuthorizedForSpace(folder.get().getSpace(), principal)) {
+    if (!userService.isAuthorizedForFolder(folder.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
     return ResponseEntity.ok().body(jwtTokenProvider
@@ -96,7 +96,7 @@ public class FolderController {
     if (folder.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
-    if (!userService.isAuthorizedForSpace(folder.get().getSpace(),
+    if (!userService.isAuthorizedForFolder(folder.get(),
         () -> jwtTokenProvider.getPayload(token, "sub"))) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
@@ -125,7 +125,7 @@ public class FolderController {
     if (parentFolder.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
-    if (!userService.isAuthorizedForSpace(parentFolder.get().getSpace(), principal)) {
+    if (!userService.isAuthorizedForFolder(parentFolder.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
     if (StringUtils.isEmpty(name)) {
@@ -147,7 +147,7 @@ public class FolderController {
     if (folderOptional.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
-    if (!userService.isAuthorizedForSpace(folderOptional.get().getSpace(), principal)) {
+    if (!userService.isAuthorizedForFolder(folderOptional.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
     if (StringUtils.isEmpty(name)) {
@@ -170,7 +170,7 @@ public class FolderController {
     if (folder.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
-    if (!userService.isAuthorizedForSpace(folder.get().getSpace(), principal)) {
+    if (!userService.isAuthorizedForFolder(folder.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
     if (force == null && !folderService.isEmpty(folder.get())) {

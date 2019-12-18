@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +23,8 @@ public class UserService {
   private FolderService folderService;
   private ArtifactService artifactService;
 
-  public UserService(UserRepository userRepository, FolderService folderService, ArtifactService artifactService) {
+  public UserService(UserRepository userRepository, @Lazy FolderService folderService,
+      @Lazy ArtifactService artifactService) {
     this.userRepository = userRepository;
     this.folderService = folderService;
     this.artifactService = artifactService;
@@ -87,6 +89,10 @@ public class UserService {
    */
   @Transactional
   public boolean isAuthorizedForSpace(Space space, Principal principal) {
+    JwtPrincipal jwtPrincipal = JwtPrincipal.fromPrincipal(principal);
+    if(jwtPrincipal.isAnonymous()) {
+      return false; // spaces can't be shared
+    }
     Optional<User> optionalUser = this.findByName(principal.getName());
     if (optionalUser.isEmpty()) {
       return false;
@@ -99,7 +105,7 @@ public class UserService {
    */
   @Transactional
   public boolean isAuthorizedForFolder(Folder folder, Principal principal) {
-    JwtPrincipal jwtPrincipal = (JwtPrincipal) principal;
+    JwtPrincipal jwtPrincipal = JwtPrincipal.fromPrincipal(principal);
     if (jwtPrincipal.isAnonymous()) {
       switch (jwtPrincipal.getSharedEntityType()) {
         case Artifact.TYPE_IDENTIFIER:
@@ -124,12 +130,13 @@ public class UserService {
    */
   @Transactional
   public boolean isAuthorizedForArtifact(Artifact artifact, Principal principal) {
-    JwtPrincipal jwtPrincipal = (JwtPrincipal) principal;
+    JwtPrincipal jwtPrincipal = JwtPrincipal.fromPrincipal(principal);
     if (jwtPrincipal.isAnonymous()) {
       switch (jwtPrincipal.getSharedEntityType()) {
         case Artifact.TYPE_IDENTIFIER: {
-          Optional<Artifact> sharedArtifact = artifactService.findById(jwtPrincipal.getSharedEntityId());
-          if(sharedArtifact.isEmpty()) {
+          Optional<Artifact> sharedArtifact = artifactService
+              .findById(jwtPrincipal.getSharedEntityId());
+          if (sharedArtifact.isEmpty()) {
             return false;
           }
           return sharedArtifact.get().getId() == artifact.getId();

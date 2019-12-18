@@ -1,6 +1,7 @@
 package de.seprojekt.se2019.g4.mimir.security;
 
 import java.security.Principal;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 public class JwtPrincipal implements Principal {
 
@@ -20,6 +21,10 @@ public class JwtPrincipal implements Principal {
     this.name = name;
     this.sharedEntityId = null;
     this.sharedEntityType = null;
+  }
+
+  public static JwtPrincipal fromPrincipal(Principal principal) {
+    return (JwtPrincipal) (((UsernamePasswordAuthenticationToken) principal).getPrincipal());
   }
 
   public Boolean isAnonymous() {
