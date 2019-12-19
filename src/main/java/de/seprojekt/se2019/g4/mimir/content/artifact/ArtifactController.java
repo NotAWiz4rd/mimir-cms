@@ -3,6 +3,7 @@ package de.seprojekt.se2019.g4.mimir.content.artifact;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
+import de.seprojekt.se2019.g4.mimir.security.JwtPrincipal;
 import de.seprojekt.se2019.g4.mimir.security.JwtTokenProvider;
 import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import java.io.IOException;
@@ -103,7 +104,7 @@ public class ArtifactController {
       ResponseEntity.notFound().build();
     }
     if (!userService.isAuthorizedForArtifact(artifact.get(),
-        () -> jwtTokenProvider.getPayload(token, "sub"))) {
+        new JwtPrincipal(jwtTokenProvider.getPayload(token, "sub")))) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
     HttpHeaders headers = new HttpHeaders();

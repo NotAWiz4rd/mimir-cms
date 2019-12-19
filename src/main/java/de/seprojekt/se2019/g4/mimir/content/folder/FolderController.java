@@ -1,6 +1,7 @@
 package de.seprojekt.se2019.g4.mimir.content.folder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import de.seprojekt.se2019.g4.mimir.security.JwtPrincipal;
 import de.seprojekt.se2019.g4.mimir.security.JwtTokenProvider;
 import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import java.io.IOException;
@@ -98,7 +99,7 @@ public class FolderController {
       return ResponseEntity.notFound().build();
     }
     if (!userService.isAuthorizedForFolder(folder.get(),
-        () -> jwtTokenProvider.getPayload(token, "sub"))) {
+        new JwtPrincipal(jwtTokenProvider.getPayload(token, "sub")))) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
