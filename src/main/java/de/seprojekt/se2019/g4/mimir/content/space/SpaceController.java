@@ -1,6 +1,7 @@
 package de.seprojekt.se2019.g4.mimir.content.space;
 
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
+import de.seprojekt.se2019.g4.mimir.security.JwtPrincipal;
 import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import java.security.Principal;
 import java.util.List;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,8 +43,9 @@ public class SpaceController {
    * The user can get a list of all existing spaces using this interface.
    */
   @GetMapping(value = "/spaces")
-  public ResponseEntity<List<Space>> getSpaces(Principal principal) {
-    return ResponseEntity.ok().body(userService.findByName(principal.getName()).get().getSpaces());
+  public ResponseEntity<List<Space>> getSpaces(Authentication auth) {
+    System.out.println(auth.getPrincipal());
+    return ResponseEntity.ok().body(((JwtPrincipal) auth.getPrincipal()).getUser().getSpaces());
   }
 
   /**

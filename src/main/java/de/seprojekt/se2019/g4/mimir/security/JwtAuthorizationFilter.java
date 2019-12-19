@@ -12,6 +12,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
+import de.seprojekt.se2019.g4.mimir.security.user.UserRepository;
+
 public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
   private JwtTokenProvider jwtTokenProvider;
@@ -53,15 +55,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
     }
 
     var username = jwtTokenProvider.getPayload(token, "sub");
-    if (username.equals(JwtPrincipal.shareLinkUserName)) {
-      var sharedEntityId = Long.parseLong(jwtTokenProvider.getPayload(token, "id"));
-      var sharedEntityType = jwtTokenProvider.getPayload(token, "type");
-      return new UsernamePasswordAuthenticationToken(
-          new JwtPrincipal(username, sharedEntityId, sharedEntityType), null,
-          Collections.emptyList());
-    } else {
-      return new UsernamePasswordAuthenticationToken(new JwtPrincipal(username), null,
-          Collections.emptyList());
-    }
+    return new UsernamePasswordAuthenticationToken(
+      username, null, Collections.emptyList());
   }
 }

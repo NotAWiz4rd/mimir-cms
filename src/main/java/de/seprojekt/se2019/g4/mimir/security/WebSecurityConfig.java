@@ -4,6 +4,7 @@ import static de.seprojekt.se2019.g4.mimir.security.AuthenticationConfiguration.
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
 
 /**
  * This class will configure the security and ldap security aspect of the application
@@ -21,7 +23,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 @EnableConfigurationProperties(AuthenticationConfiguration.class)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
   private final static Logger LOGGER = LoggerFactory.getLogger(WebSecurityConfig.class);
   private AuthenticationConfiguration config;
 
@@ -123,6 +124,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
   }
 
+  @Bean
+  public UserDetailsContextMapper userDetailsContextMapper() {
+    return new JwtUserDetailsContextMapper();
+  }
+
   /**
    * Do the basic ldap configuration.
    */
@@ -134,6 +140,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .userSearchBase(ldapConfig.getUserSearchBase())
         .groupSearchBase(ldapConfig.getGroupSearchBase())
         .groupSearchFilter(ldapConfig.getGroupSearchFilter())
+        .userDetailsContextMapper(userDetailsContextMapper())
         .contextSource();
   }
 }
