@@ -100,10 +100,22 @@ public class FolderController {
     if (folder.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
-    if (!userService.isAuthorizedForFolder(folder.get(),
-        new UsernamePasswordAuthenticationToken(
-            new JwtPrincipal(jwtTokenProvider.getPayload(token, "sub")), null,
-            Collections.emptyList()))) {
+
+    // TODO let JwtAuthorizationFilter do this
+    UsernamePasswordAuthenticationToken authentication;
+    var username = jwtTokenProvider.getPayload(token, "sub");
+    if (username.equals(JwtPrincipal.shareLinkUserName)) {
+      var sharedEntityId = Long.parseLong(jwtTokenProvider.getPayload(token, "id"));
+      var sharedEntityType = jwtTokenProvider.getPayload(token, "type");
+      authentication = new UsernamePasswordAuthenticationToken(
+          new JwtPrincipal(username, sharedEntityId, sharedEntityType), null,
+          Collections.emptyList());
+    } else {
+      authentication = new UsernamePasswordAuthenticationToken(new JwtPrincipal(username), null,
+          Collections.emptyList());
+    }
+
+    if (!userService.isAuthorizedForFolder(folder.get(), authentication)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 

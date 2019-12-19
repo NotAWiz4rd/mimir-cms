@@ -105,12 +105,25 @@ public class ArtifactController {
     if (artifact.isEmpty()) {
       ResponseEntity.notFound().build();
     }
-    if (!userService.isAuthorizedForArtifact(artifact.get(),
-        new UsernamePasswordAuthenticationToken(
-            new JwtPrincipal(jwtTokenProvider.getPayload(token, "sub")), null,
-            Collections.emptyList()))) {
+
+    // TODO let JwtAuthorizationFilter do this
+    UsernamePasswordAuthenticationToken authentication;
+    var username = jwtTokenProvider.getPayload(token, "sub");
+    if (username.equals(JwtPrincipal.shareLinkUserName)) {
+      var sharedEntityId = Long.parseLong(jwtTokenProvider.getPayload(token, "id"));
+      var sharedEntityType = jwtTokenProvider.getPayload(token, "type");
+      authentication = new UsernamePasswordAuthenticationToken(
+          new JwtPrincipal(username, sharedEntityId, sharedEntityType), null,
+          Collections.emptyList());
+    } else {
+      authentication = new UsernamePasswordAuthenticationToken(new JwtPrincipal(username), null,
+          Collections.emptyList());
+    }
+
+    if (!userService.isAuthorizedForArtifact(artifact.get(), authentication)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
     HttpHeaders headers = new HttpHeaders();
     headers.set("Content-Disposition",
         String.format("attachment; filename=\"%s\"", artifact.get().getName()));
