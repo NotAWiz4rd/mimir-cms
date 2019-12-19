@@ -7,6 +7,7 @@ import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
+import java.util.Collections;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.MimeType;
 import org.springframework.util.StringUtils;
@@ -65,8 +67,8 @@ public class FolderController {
   }
 
   /**
-   * The user can get an JWT for sharing this folder,
-   * if he has access to the space containing this folder
+   * The user can get an JWT for sharing this folder, if he has access to the space containing this
+   * folder
    */
   @GetMapping(value = "/folder/share/{id}")
   public ResponseEntity<String> getShareToken(@PathVariable long id,
@@ -99,7 +101,9 @@ public class FolderController {
       return ResponseEntity.notFound().build();
     }
     if (!userService.isAuthorizedForFolder(folder.get(),
-        new JwtPrincipal(jwtTokenProvider.getPayload(token, "sub")))) {
+        new UsernamePasswordAuthenticationToken(
+            new JwtPrincipal(jwtTokenProvider.getPayload(token, "sub")), null,
+            Collections.emptyList()))) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
