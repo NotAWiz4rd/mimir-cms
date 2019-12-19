@@ -53,7 +53,7 @@ public class ThumbnailController {
     if (artifact.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
-    if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), principal)) {
+    if (!userService.isAuthorizedForArtifact(artifact.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
     return artifactService.findThumbnail(artifact.get())

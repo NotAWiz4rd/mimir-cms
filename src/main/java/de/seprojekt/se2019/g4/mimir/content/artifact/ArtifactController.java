@@ -62,14 +62,15 @@ public class ArtifactController {
     if (!artifact.isPresent()) {
       return ResponseEntity.notFound().build();
     }
-    if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), principal)) {
+    if (!userService.isAuthorizedForArtifact(artifact.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
     return ResponseEntity.ok().body(artifact.get());
   }
 
   /**
-   * The user can get an JWT for sharing this artifact
+   * The user can get an JWT for sharing this artifact,
+   * if he has access to the space containing this artifact
    */
   @GetMapping(value = "/artifact/share/{id}")
   public ResponseEntity<String> getShareToken(@PathVariable long id,
@@ -101,7 +102,7 @@ public class ArtifactController {
     if (artifact.isEmpty()) {
       ResponseEntity.notFound().build();
     }
-    if (!userService.isAuthorizedForSpace(artifact.get().getSpace(),
+    if (!userService.isAuthorizedForArtifact(artifact.get(),
         () -> jwtTokenProvider.getPayload(token, "sub"))) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
@@ -130,6 +131,9 @@ public class ArtifactController {
     if (parentFolder.isEmpty()) {
       return ResponseEntity.status(409).build();
     }
+    if (!userService.isAuthorizedForFolder(parentFolder.get(), principal)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
     if (artifactService.existsByParentFolderAndDisplayName(parentFolder.get(), name)) {
       return ResponseEntity.status(409).build();
     }
@@ -138,9 +142,6 @@ public class ArtifactController {
     }
     if (file == null || file.getContentType() == null || file.isEmpty()) {
       return ResponseEntity.badRequest().build();
-    }
-    if (!userService.isAuthorizedForSpace(parentFolder.get().getSpace(), principal)) {
-      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
     return ResponseEntity.ok().body(artifactService.upload(name, file, parentFolder.get()));
   }
@@ -155,7 +156,7 @@ public class ArtifactController {
     if (artifactOptional.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
-    if (!userService.isAuthorizedForSpace(artifactOptional.get().getSpace(), principal)) {
+    if (!userService.isAuthorizedForArtifact(artifactOptional.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
     if (StringUtils.isEmpty(name)) {
@@ -175,7 +176,7 @@ public class ArtifactController {
     if (artifact.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
-    if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), principal)) {
+    if (!userService.isAuthorizedForArtifact(artifact.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
     artifactService.delete(artifact.get());
