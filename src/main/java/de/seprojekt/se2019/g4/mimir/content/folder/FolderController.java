@@ -64,7 +64,8 @@ public class FolderController {
   }
 
   /**
-   * The user can get an JWT for sharing this folder
+   * The user can get an JWT for sharing this folder,
+   * if he has access to the space containing this folder
    */
   @GetMapping(value = "/folder/share/{id}")
   public ResponseEntity<String> getShareToken(@PathVariable long id,
@@ -75,7 +76,7 @@ public class FolderController {
     if (folder.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
-    if (!userService.isAuthorizedForFolder(folder.get(), principal)) {
+    if (!userService.isAuthorizedForSpace(folder.get().getSpace(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
     return ResponseEntity.ok().body(jwtTokenProvider

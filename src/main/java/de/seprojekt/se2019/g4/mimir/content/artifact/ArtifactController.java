@@ -69,7 +69,8 @@ public class ArtifactController {
   }
 
   /**
-   * The user can get an JWT for sharing this artifact
+   * The user can get an JWT for sharing this artifact,
+   * if he has access to the space containing this artifact
    */
   @GetMapping(value = "/artifact/share/{id}")
   public ResponseEntity<String> getShareToken(@PathVariable long id,
@@ -80,7 +81,7 @@ public class ArtifactController {
     if (artifact.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
-    if (!userService.isAuthorizedForArtifact(artifact.get(), principal)) {
+    if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
     return ResponseEntity.ok().body(jwtTokenProvider
