@@ -2,6 +2,7 @@ package de.seprojekt.se2019.g4.mimir.content.space;
 
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
 import de.seprojekt.se2019.g4.mimir.security.JwtPrincipal;
+import de.seprojekt.se2019.g4.mimir.security.user.User;
 import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import java.security.Principal;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
@@ -78,6 +80,24 @@ public class SpaceController {
     }
 
     return ResponseEntity.ok().body(spaceService.create(name, principal));
+  }
+
+  /**
+   * Adds a user to a space
+   */
+  @PutMapping(value = "/space/{id}")
+  public ResponseEntity<String> addUser(@PathVariable long id,
+      @RequestParam(name = "username") String username, Principal principal) {
+    Optional<Space> space = spaceService.findById(id);
+    Optional<User> user = userService.findByName(username);
+    if (space.isEmpty() || user.isEmpty()) {
+      return ResponseEntity.notFound().build();
+    }
+    if (!userService.isAuthorizedForSpace(space.get(), principal)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+    userService.addUserToSpace(user.get(), space.get());
+    return ResponseEntity.ok().build();
   }
 
   /**

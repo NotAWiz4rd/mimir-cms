@@ -8,6 +8,7 @@ import de.seprojekt.se2019.g4.mimir.content.space.Space;
 import de.seprojekt.se2019.g4.mimir.security.JwtPrincipal;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +81,10 @@ public class UserService {
   @Transactional
   public User addUserToSpace(User user, Space space) {
     user = this.findByName(user.getName()).get();
-    user.getSpaces().add(space);
+    List<Space> spaceList = user.getSpaces();
+    if(!spaceList.contains(space)) {
+      spaceList.add(space);
+    }
     return this.update(user);
   }
 
