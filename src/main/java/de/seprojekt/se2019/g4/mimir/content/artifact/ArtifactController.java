@@ -3,13 +3,11 @@ package de.seprojekt.se2019.g4.mimir.content.artifact;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
-import de.seprojekt.se2019.g4.mimir.security.JwtPrincipal;
 import de.seprojekt.se2019.g4.mimir.security.JwtTokenProvider;
 import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
-import java.util.Collections;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +15,6 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -134,6 +131,27 @@ public class ArtifactController {
         .contentLength(artifact.get().getContentLength())
         // InputStreamResource will close the InputStream
         .body(resource);
+  }
+
+  /**
+   * returns raw content of artifact when a user visits this url
+   */
+  @GetMapping(value = "/artifact/{id}/raw")
+  public ResponseEntity getRawData(@PathVariable Long id, Principal principal) {
+    Optional<Artifact> artifactOptional = artifactService.findById(id);
+    if (artifactOptional.isEmpty()) {
+      return ResponseEntity.notFound().build();
+    }
+    Artifact artifact = artifactOptional.get();
+    if (!userService.isAuthorizedForArtifact(artifact, principal)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+    InputStream inputStream = artifactService.findArtifactContent(artifact);
+    InputStreamResource content = new InputStreamResource(inputStream);
+    return ResponseEntity.ok()
+        .contentType(artifact.getContentType())
+        .contentLength(artifact.getContentLength())
+        .body(content);
   }
 
   /**
