@@ -57,6 +57,11 @@ public class Comment {
       this.creationDate = creationDate;
     }
 
+    @JsonProperty("author")
+    public String getAuthorName() {
+        return this.getAuthor().getName();
+    }
+
     public Long getId() {
         return id;
     }
