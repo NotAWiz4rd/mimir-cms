@@ -6,19 +6,35 @@ Entwicklung
 
 Rest-Schnittstelle:
 
-    /spaces -> liefert alle Spaces
-    /space/{id} -> liefert Space nach Frontend Muster
-    /space/{id}?force -> DELETE löscht Space und gesamten Inhalt
-    /folder/{id} -> liefert nur den Folder zurück
-    /artifact/{id} -> liefert nur das Artifact zurück
-    /artifact/{id}/download -> startet den Download des Artifacts
-    /folder/{id}/download -> startet den Download des Folders
-    /folder/{id}?force -> DELETE löscht Folder und gesamten Inhalt
-    /comments -> POST erstellt einen Kommentar
-    /comments?artifactId=123 -> liefert alle Kommentare
+    /login?username=...&password=... -> GET liefert JWT für User
 
-Außerdem können Spaces, Folder und Artifacts über POST-Request (siehe Code) vom "ROOT-USER" erstellt und über DELETE-Requests gelöscht werden.<br>
-Über PUT an Folder und Artifact können diese umbenannt werden.
+    /spaces -> GET liefert alle Spaces
+    /space/{id} -> GET liefert Space nach Frontend Muster
+    /space/{id}?force -> DELETE löscht Space und gesamten Inhalt
+    /space/?name -> POST erstellt einen neuen Space
+    
+    /folder -> POST erstellt neuen Folder
+    /folder/{id} -> GET liefert nur den Folder zurück
+    /folder/{id}?name=... -> PUT benennt Folder um
+    /folder/{id}?force -> DELETE löscht Folder und gesamten Inhalt
+    /folder/{id}/download -> GET startet den Download des Folders
+    /folder/download/{id} -> GET liefert JWT zum Downloaden eines Folders
+    /folder/share/{id} -> GET liefert JWT zum Teilen eines Folders
+    
+    /artifact -> POST erstellt neues Artifact
+    /artifact/{id} -> GET liefert nur das Artifact zurück
+    /artifact/{id} -> DELETE löscht das Artifact
+    /artifact/{id}?name=... -> PUT benennt Artifact um
+    /artifact/{id}/download -> GET startet den Download des Artifacts
+    /artifact/{id}/raw -> GET liefert content eines Artifacts
+    /artifact/download/{id} -> GET liefert JWT zum Downloaden eines Artifacts
+    /artifact/share/{id} -> GET liefert JWT zum Teilen eines Artifacts
+    
+    /comments -> POST erstellt einen Kommentar
+    /comments?artifactId=123 -> GET liefert alle Kommentare
+    /comments/{id} -> DELETE löscht Kommentar
+    
+    /thumbnail/{id} -> GET liefert Thumbnail oder Icon für Artifact
 
 Docker Deployment
 ---
