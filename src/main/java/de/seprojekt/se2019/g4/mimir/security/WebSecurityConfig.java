@@ -39,12 +39,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     http
         .authorizeRequests()
-        .antMatchers(HttpMethod.POST, "/artifact/*/download")
-        .permitAll()
-        .antMatchers(HttpMethod.POST, "/folder/*/download")
-        .permitAll()
-        .and()
-        .authorizeRequests()
         .anyRequest()
         .authenticated()
         .and()

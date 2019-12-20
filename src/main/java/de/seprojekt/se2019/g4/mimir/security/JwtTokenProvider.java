@@ -29,6 +29,9 @@ public class JwtTokenProvider {
   @Value("${app.jwtExpirationMs}")
   private int jwtExpirationMs;
 
+  @Value("${app.jwtDownloadExpirationMs}")
+  private int jwtDownloadExpirationMs;
+
   public String generateToken(Authentication auth) {
     var user = ((LdapUserDetails) auth.getPrincipal());
     return Jwts.builder()
@@ -36,6 +39,11 @@ public class JwtTokenProvider {
         .setSubject(user.getUsername())
         .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
         .compact();
+  }
+
+  public String generateDownloadToken(Long sharedEntityId, String sharedEntityType)
+      throws JsonProcessingException {
+    return this.generateShareToken(sharedEntityId, sharedEntityType, jwtDownloadExpirationMs);
   }
 
   public String generateShareToken(Long sharedEntityId, String sharedEntityType,

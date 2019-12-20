@@ -1,13 +1,11 @@
 package de.seprojekt.se2019.g4.mimir.content.folder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import de.seprojekt.se2019.g4.mimir.security.JwtPrincipal;
 import de.seprojekt.se2019.g4.mimir.security.JwtTokenProvider;
 import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
-import java.util.Collections;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +14,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.MimeType;
 import org.springframework.util.StringUtils;
@@ -87,35 +84,35 @@ public class FolderController {
   }
 
   /**
-   * Generated a download of a folder as a ZIP file Not secured by Spring Security!
+   * The user can get an JWT (with short expiration time) for downloading a folder
    */
-  @PostMapping(value = "/folder/{id}/download")
-  public ResponseEntity<InputStreamResource> downloadFolder(@PathVariable long id,
-      @RequestParam(required = true, name = "token") String token) throws IOException {
-    if (!jwtTokenProvider.validateToken(token)) {
-      return ResponseEntity.status(403).build();
+  @GetMapping(value = "/folder/download/{id}")
+  public ResponseEntity<String> getDownloadToken(@PathVariable long id, Principal principal)
+      throws JsonProcessingException {
+    Optional<Folder> folder = folderService.findById(id);
+    if (folder.isEmpty()) {
+      return ResponseEntity.notFound().build();
     }
+    if (!userService.isAuthorizedForFolder(folder.get(), principal)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+    return ResponseEntity.ok().body(jwtTokenProvider
+        .generateDownloadToken(folder.get().getId(), Folder.TYPE_IDENTIFIER));
+  }
+
+  /**
+   * Generated a download of a folder as a ZIP file
+   */
+  @GetMapping(value = "/folder/{id}/download")
+  public ResponseEntity<InputStreamResource> downloadFolder(@PathVariable long id,
+      Principal principal) throws IOException {
 
     Optional<Folder> folder = folderService.findById(id);
     if (folder.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
 
-    // TODO let JwtAuthorizationFilter do this
-    UsernamePasswordAuthenticationToken authentication;
-    var username = jwtTokenProvider.getPayload(token, "sub");
-    if (username.equals(JwtPrincipal.shareLinkUserName)) {
-      var sharedEntityId = Long.parseLong(jwtTokenProvider.getPayload(token, "id"));
-      var sharedEntityType = jwtTokenProvider.getPayload(token, "type");
-      authentication = new UsernamePasswordAuthenticationToken(
-          new JwtPrincipal(username, sharedEntityId, sharedEntityType), null,
-          Collections.emptyList());
-    } else {
-      authentication = new UsernamePasswordAuthenticationToken(new JwtPrincipal(username), null,
-          Collections.emptyList());
-    }
-
-    if (!userService.isAuthorizedForFolder(folder.get(), authentication)) {
+    if (!userService.isAuthorizedForFolder(folder.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
