@@ -92,35 +92,33 @@ public class ArtifactController {
   }
 
   /**
-   * Generate a download of an artifact when a user visit this url. Not secured by Spring Security!
+   * The user can get an JWT (with short expiration time) for downloading an artifact
    */
-  @PostMapping(value = "/artifact/{id}/download")
-  public ResponseEntity<InputStreamResource> downloadArtifact(@PathVariable long id,
-      @RequestParam(required = true, name = "token") String token) {
-    if (!jwtTokenProvider.validateToken(token)) {
-      return ResponseEntity.status(403).build();
+  @GetMapping(value = "/artifact/download/{id}")
+  public ResponseEntity<String> getDownloadToken(@PathVariable long id, Principal principal)
+      throws JsonProcessingException {
+    Optional<Artifact> artifact = artifactService.findById(id);
+    if (artifact.isEmpty()) {
+      return ResponseEntity.notFound().build();
     }
+    if (!userService.isAuthorizedForArtifact(artifact.get(), principal)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+    return ResponseEntity.ok().body(jwtTokenProvider
+        .generateDownloadToken(artifact.get().getId(), Artifact.TYPE_IDENTIFIER));
+  }
 
+  /**
+   * Generate a download of an artifact when a user visit this url
+   */
+  @GetMapping(value = "/artifact/{id}/download")
+  public ResponseEntity<InputStreamResource> downloadArtifact(@PathVariable long id, Principal principal) {
     Optional<Artifact> artifact = artifactService.findById(id);
     if (artifact.isEmpty()) {
       ResponseEntity.notFound().build();
     }
 
-    // TODO let JwtAuthorizationFilter do this
-    UsernamePasswordAuthenticationToken authentication;
-    var username = jwtTokenProvider.getPayload(token, "sub");
-    if (username.equals(JwtPrincipal.shareLinkUserName)) {
-      var sharedEntityId = Long.parseLong(jwtTokenProvider.getPayload(token, "id"));
-      var sharedEntityType = jwtTokenProvider.getPayload(token, "type");
-      authentication = new UsernamePasswordAuthenticationToken(
-          new JwtPrincipal(username, sharedEntityId, sharedEntityType), null,
-          Collections.emptyList());
-    } else {
-      authentication = new UsernamePasswordAuthenticationToken(new JwtPrincipal(username), null,
-          Collections.emptyList());
-    }
-
-    if (!userService.isAuthorizedForArtifact(artifact.get(), authentication)) {
+    if (!userService.isAuthorizedForArtifact(artifact.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 

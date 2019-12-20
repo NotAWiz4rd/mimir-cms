@@ -225,10 +225,10 @@ public class FolderService {
   }
 
   public boolean matchesOrIsChild(Folder sharedFolder, Folder requestedFolder) {
-    if (requestedFolder.getParentFolder() == null) { // root folders can't be shared
-      return false;
-    } else if (requestedFolder.getId() == sharedFolder.getId()) {
+    if (requestedFolder.getId() == sharedFolder.getId()) {
       return true;
+    } else if (requestedFolder.getParentFolder() == null) { // root folders can't be shared
+      return false;
     } else {
       return this.matchesOrIsChild(sharedFolder, requestedFolder.getParentFolder());
     }

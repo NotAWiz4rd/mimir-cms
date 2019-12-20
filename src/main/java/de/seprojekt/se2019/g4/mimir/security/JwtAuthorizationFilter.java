@@ -36,17 +36,27 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
   }
 
   private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
-    var token = request.getHeader("Authorization");
+    String token;
 
-    if (token == null) {
-      return null;
+    if(request.getRequestURI().matches("/(artifact|folder)/[\\d]+/download")) {
+      token = request.getParameter("token");
+
+      if (token == null) {
+        return null;
+      }
+    } else {
+      token = request.getHeader("Authorization");
+
+      if (token == null) {
+        return null;
+      }
+
+      if (!token.startsWith("Bearer ")) {
+        return null;
+      }
+
+      token = token.replace("Bearer ", "");
     }
-
-    if (!token.startsWith("Bearer ")) {
-      return null;
-    }
-
-    token = token.replace("Bearer ", "");
 
     if (!jwtTokenProvider.validateToken(token)) {
       return null;
