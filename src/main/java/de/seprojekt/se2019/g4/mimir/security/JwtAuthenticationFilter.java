@@ -31,9 +31,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
       HttpServletResponse response) {
     var username = request.getParameter("username");
     var password = request.getParameter("password");
-    if (password != null) {
-      password = Base64.getEncoder().encodeToString(password.getBytes());
-    }
     var authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
 
     return authenticationManager.authenticate(authenticationToken);
