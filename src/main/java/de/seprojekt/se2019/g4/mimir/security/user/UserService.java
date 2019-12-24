@@ -5,7 +5,9 @@ import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactService;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
 import de.seprojekt.se2019.g4.mimir.content.space.Space;
+import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
 import de.seprojekt.se2019.g4.mimir.security.JwtPrincipal;
+import de.seprojekt.se2019.g4.mimir.security.LdapClient;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,21 +25,32 @@ public class UserService {
   private UserRepository userRepository;
   private FolderService folderService;
   private ArtifactService artifactService;
+  private SpaceService spaceService;
+  private LdapClient ldapClient;
 
   public UserService(UserRepository userRepository, @Lazy FolderService folderService,
-      @Lazy ArtifactService artifactService) {
+      @Lazy ArtifactService artifactService, @Lazy SpaceService spaceService,
+      LdapClient ldapClient) {
     this.userRepository = userRepository;
     this.folderService = folderService;
     this.artifactService = artifactService;
+    this.spaceService = spaceService;
+    this.ldapClient = ldapClient;
   }
 
   @Transactional
-  public User create(String name, String mail) {
+  public User create(String name, String password, String mail) {
+    LOGGER.info("Creating new user in LDAP: " + name);
     User user = new User();
     user.setName(name);
     user.setMail(mail);
     user.setSpaces(new ArrayList<>());
-    return userRepository.save(user);
+    user = userRepository.save(user);
+
+    spaceService.create(name, new JwtPrincipal(name));
+    ldapClient.create(name, password);
+
+    return user;
   }
 
   /**

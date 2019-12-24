@@ -46,11 +46,8 @@ public class ExampleDataGenerator implements CommandLineRunner {
    */
   @Override
   public void run(String... args) throws Exception {
-    User user1 = userService.create("thellmann", "t.hellmann@ostfalia.de");
-    User user2 = userService.create("jbark", "jo.bark@ostfalia.de");
-
-    Space space = spaceService.create("thellmann", () -> "thellmann");
-    Space space2 = spaceService.create("jbark", () -> "jbark");
+    User user1 = userService.create("thellmann", "thellmann", "t.hellmann@ostfalia.de");
+    User user2 = userService.create("jbark", "jbark", "jo.bark@ostfalia.de");
 
     Space sharedSpace = spaceService.create("shared", () -> "thellmann");
     userService.addUserToSpace(user2, sharedSpace);

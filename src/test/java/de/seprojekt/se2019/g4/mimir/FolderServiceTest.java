@@ -40,7 +40,7 @@ public class FolderServiceTest {
 
     @Test
     public void shouldDownloadFolderAsZip() throws Exception {
-        userService.create("testUser", "test@mail.test");
+        userService.create("testUser", "testUser", "test@mail.test");
         var space = spaceService.create("test", () -> "testUser");
         var parentFolder = folderService.create(space.getRootFolder(), "folder1");
 
