@@ -47,6 +47,12 @@ public class UserService {
     return this.userRepository.findByName(name);
   }
 
+  /**
+   * Return user with given id
+   */
+  public Optional<User> findById(long userId) {
+    return this.userRepository.findById(userId);
+  }
 
   /**
    * Update a user
@@ -76,13 +82,24 @@ public class UserService {
   }
 
   /**
+   * Gets Users By Space.
+   *
+   * @param space The space in question.
+   * @return A list of Users of said Space.
+   */
+  @Transactional
+  public List<User> getUsersBySpace(Space space) {
+    return this.userRepository.findAllBySpacesContains(space);
+  }
+
+  /**
    * Adds user to this space
    */
   @Transactional
   public User addUserToSpace(User user, Space space) {
     user = this.findByName(user.getName()).get();
     List<Space> spaceList = user.getSpaces();
-    if(!spaceList.contains(space)) {
+    if (!spaceList.contains(space)) {
       spaceList.add(space);
     }
     return this.update(user);
@@ -94,7 +111,7 @@ public class UserService {
   @Transactional
   public boolean isAuthorizedForSpace(Space space, Principal principal) {
     JwtPrincipal jwtPrincipal = JwtPrincipal.fromPrincipal(principal);
-    if(jwtPrincipal.isAnonymous()) {
+    if (jwtPrincipal.isAnonymous()) {
       return false; // spaces can't be shared
     }
     Optional<User> optionalUser = this.findByName(principal.getName());

@@ -101,6 +101,46 @@ public class SpaceController {
   }
 
   /**
+   * Returns all users of a space.
+   */
+  @GetMapping(value = "/space/{id}/users")
+  public ResponseEntity<List<User>> getUsers(@PathVariable long id, Principal principal) {
+    Optional<Space> space = spaceService.findById(id);
+
+    if (space.isEmpty()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    if (!userService.isAuthorizedForSpace(space.get(), principal)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    return ResponseEntity.ok(userService.getUsersBySpace(space.get()));
+  }
+
+  /**
+   * Removes a Space from a User.
+   */
+  @DeleteMapping(value = "space/{id}/removeuser")
+  public ResponseEntity<String> removeUser(@PathVariable long id,
+      @RequestParam(name = "id") long userId, Principal principal) {
+    Optional<Space> space = spaceService.findById(id);
+    Optional<User> user = userService.findById(userId);
+
+    if (space.isEmpty() || user.isEmpty()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    if (!userService.isAuthorizedForSpace(space.get(), principal)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+    User realUser = user.get();
+    realUser.getSpaces().remove(space.get());
+    userService.update(realUser);
+    return ResponseEntity.ok().build();
+  }
+
+  /**
    * The user can delete a space by calling this interface.
    */
   @DeleteMapping(value = "/space/{id}")
