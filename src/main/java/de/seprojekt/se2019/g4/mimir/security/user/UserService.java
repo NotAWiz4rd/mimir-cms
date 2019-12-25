@@ -12,6 +12,8 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -39,16 +41,31 @@ public class UserService {
   }
 
   @Transactional
-  public User create(String name, String password, String mail) {
-    LOGGER.info("Creating new user in LDAP: " + name);
+  public User create(String mail, String password) {
+    if(!this.isValidEmailAddress(mail)) {
+      LOGGER.warn("Email " + mail + " has an invalid pattern");
+      return null;
+    }
+
+    String username = mail
+        .toLowerCase()
+        .split("@")[0]
+        .replace(".", "");
+
+    if (this.findByName(username).isPresent()) {
+      LOGGER.warn("User " + username + " already exists");
+      return null;
+    }
+
+    LOGGER.info("Creating new user in LDAP: " + username);
     User user = new User();
-    user.setName(name);
+    user.setName(username);
     user.setMail(mail);
     user.setSpaces(new ArrayList<>());
     user = userRepository.save(user);
 
-    spaceService.create(name, new JwtPrincipal(name));
-    ldapClient.create(name, password);
+    spaceService.create(username, new JwtPrincipal(username));
+    ldapClient.registerLdapUser(username, password);
 
     return user;
   }
@@ -188,6 +205,18 @@ public class UserService {
     } else {
       return this.isAuthorizedForSpace(artifact.getSpace(), principal);
     }
+  }
+
+  /**
+   * https://stackoverflow.com/questions/624581/
+   * @param email
+   * @return
+   */
+  public boolean isValidEmailAddress(String email) {
+    String ePattern = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$";
+    Pattern p = java.util.regex.Pattern.compile(ePattern);
+    Matcher m = p.matcher(email);
+    return m.matches();
   }
 
 }

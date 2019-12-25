@@ -22,17 +22,20 @@ public class RegistrationController {
    * registers a new user
    */
   @GetMapping(value = "/register")
-  public ResponseEntity register(@RequestParam("username") String username,
-      @RequestParam("password") String password, @RequestParam("mail") String mail)
+  public ResponseEntity register(@RequestParam("mail") String mail, @RequestParam("password") String password)
       throws Exception {
-    if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password) || StringUtils
+    if (StringUtils.isEmpty(password) || StringUtils
         .isEmpty(mail)) {
       return ResponseEntity.badRequest().build();
     }
+
     // TODO send mail
-    //mailService.sendMail(receiver, "Mimir-Testmail", text);
-    // TODO check if user already exists
-    userService.create(username, password, mail);
-    return ResponseEntity.ok().build();
+    // mailService.sendMail(receiver, "Mimir-Testmail", text);
+
+    if (userService.create(mail, password) != null) {
+      return ResponseEntity.ok().build();
+    } else {
+      return ResponseEntity.badRequest().build();
+    }
   }
 }

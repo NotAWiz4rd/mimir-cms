@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.authentication.configurers
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * This class will configure the security and ldap security aspect of the application
@@ -93,14 +94,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .port(ldapConfig.getPort())
         .and()
         .passwordCompare()
-        /*
-         * Spring reads the password from ldap_schema.ldif,
-         * base 64 decodes it
-         * and compares the value using the noop encoder
-         */
-        .passwordEncoder(this.passwordEncoder)
+        .passwordEncoder(new BCryptPasswordEncoder())
         .passwordAttribute(ldapConfig.getPasswordAttribute());
-
   }
 
   /**
