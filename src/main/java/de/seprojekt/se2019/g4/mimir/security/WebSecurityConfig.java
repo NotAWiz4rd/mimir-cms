@@ -22,15 +22,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(WebSecurityConfig.class);
   private AuthenticationConfiguration config;
-  private LdapBCryptPasswordEncoder passwordEncoder;
 
   /**
    * The parameters will be autowired by Spring.
    */
-  public WebSecurityConfig(AuthenticationConfiguration authenticationConfiguration,
-      LdapBCryptPasswordEncoder passwordEncoder) {
+  public WebSecurityConfig(AuthenticationConfiguration authenticationConfiguration) {
     this.config = authenticationConfiguration;
-    this.passwordEncoder = passwordEncoder;
   }
 
   /**
