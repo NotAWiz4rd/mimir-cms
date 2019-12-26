@@ -49,7 +49,6 @@ public class UserService {
     mail = mail.toLowerCase();
 
     if (!this.isValidEmailAddress(mail) ||
-        !this.isValidEmailDomain(mail) ||
         this.findByMail(mail).isPresent()) {
       return null;
     }
