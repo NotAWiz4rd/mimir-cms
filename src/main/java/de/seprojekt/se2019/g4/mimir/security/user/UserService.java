@@ -16,6 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,9 @@ public class UserService {
   private SpaceService spaceService;
   private LdapClient ldapClient;
 
+  @Value("${app.validMailDomain}")
+  private String validMailDomain;
+
   public UserService(UserRepository userRepository, @Lazy FolderService folderService,
       @Lazy ArtifactService artifactService, @Lazy SpaceService spaceService,
       LdapClient ldapClient) {
@@ -42,18 +46,19 @@ public class UserService {
 
   @Transactional
   public User create(String mail, String password) {
-    if(!this.isValidEmailAddress(mail)) {
-      LOGGER.warn("Email " + mail + " has an invalid pattern");
+    mail = mail.toLowerCase();
+
+    if (!this.isValidEmailAddress(mail) ||
+        !this.isValidEmailDomain(mail) ||
+        this.findByMail(mail).isPresent()) {
       return null;
     }
 
     String username = mail
-        .toLowerCase()
         .split("@")[0]
         .replace(".", "");
 
     if (this.findByName(username).isPresent()) {
-      LOGGER.warn("User " + username + " already exists");
       return null;
     }
 
@@ -83,6 +88,14 @@ public class UserService {
   public Optional<User> findById(long userId) {
     return this.userRepository.findById(userId);
   }
+
+  /**
+   * Return user with given mail
+   */
+  public Optional<User> findByMail(String mail) {
+    return this.userRepository.findByMail(mail.toLowerCase());
+  }
+
 
   /**
    * Update a user
@@ -209,14 +222,19 @@ public class UserService {
 
   /**
    * https://stackoverflow.com/questions/624581/
-   * @param email
-   * @return
    */
   public boolean isValidEmailAddress(String email) {
     String ePattern = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$";
     Pattern p = java.util.regex.Pattern.compile(ePattern);
     Matcher m = p.matcher(email);
     return m.matches();
+  }
+
+  /**
+   * checks if mail address is from a valid domain
+   */
+  public boolean isValidEmailDomain(String email) {
+    return email.endsWith("@" + this.validMailDomain);
   }
 
 }
