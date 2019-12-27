@@ -2,6 +2,7 @@ package de.seprojekt.se2019.g4.mimir.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.HashMap;
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;

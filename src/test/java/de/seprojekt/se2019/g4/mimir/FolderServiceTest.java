@@ -40,24 +40,20 @@ public class FolderServiceTest {
 
     @Test
     public void shouldDownloadFolderAsZip() throws Exception {
-        userService.create("testUser", "test@mail.test");
-        var space = spaceService.create("test", () -> "testUser");
-        var parentFolder = folderService.create(space.getRootFolder(), "folder1");
-
-        parentFolder.setSpace(space);
-        folderService.update(parentFolder);
+        var user = userService.create("t.estuser@mail.test", "testPassword");
+        var space = user.getSpaces().get(0);
         artifactService.upload(
             "file1.txt",
             new MockMultipartFile("file1.txt", "file1.txt", "text/plain", "foobar".getBytes()),
-            parentFolder
+            space.getRootFolder()
         );
 
-        var zip = folderService.zip(parentFolder);
+        var zip = folderService.zip(space.getRootFolder());
         var in = new ZipInputStream(zip);
         var folder1 = in.getNextEntry();
         var file1 = in.getNextEntry();
         assertTrue("zip sollte folder1 enthalten", folder1.isDirectory());
-        assertEquals("zip sollte file1 enthalten", "folder1/file1.txt", file1.getName());
+        assertEquals("zip sollte file1 enthalten", space.getRootFolder().getName() + "/file1.txt", file1.getName());
         assertNotEquals("file1 sollte nicht leer sein", 0, file1.getSize());
     }
 }

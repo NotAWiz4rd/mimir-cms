@@ -5,6 +5,7 @@ import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
 import de.seprojekt.se2019.g4.mimir.content.space.Space;
 import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
+import de.seprojekt.se2019.g4.mimir.security.JwtPrincipal;
 import de.seprojekt.se2019.g4.mimir.security.user.User;
 import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import java.io.IOException;
@@ -46,13 +47,10 @@ public class ExampleDataGenerator implements CommandLineRunner {
    */
   @Override
   public void run(String... args) throws Exception {
-    User user1 = userService.create("thellmann", "t.hellmann@ostfalia.de");
-    User user2 = userService.create("jbark", "jo.bark@ostfalia.de");
+    userService.create("t.hellmann@ostfalia.de","thellmann");
+    User user2 = userService.create("jo.bark@ostfalia.de","jobark");
 
-    Space space = spaceService.create("thellmann", () -> "thellmann");
-    Space space2 = spaceService.create("jbark", () -> "jbark");
-
-    Space sharedSpace = spaceService.create("shared", () -> "thellmann");
+    Space sharedSpace = spaceService.create("shared", new JwtPrincipal("thellmann"));
     userService.addUserToSpace(user2, sharedSpace);
 
     Folder sharedRoot = folderService.findByParentFolderAndDisplayName(null, "shared").get();

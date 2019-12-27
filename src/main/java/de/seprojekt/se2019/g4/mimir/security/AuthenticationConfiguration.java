@@ -48,12 +48,10 @@ public class AuthenticationConfiguration {
     private String userSearchFilter;
     //user.authentication.ldap.user-search-base
     private String userSearchBase;
-    //user.authentication.ldap.group-search-base
-    private String groupSearchBase;
-    //user.authentication.ldap.group-search-filter
-    private String groupSearchFilter;
     //user.authentication.ldap.url
     private String url;
+    //user.authentication.ldap.port
+    private Integer port;
     //user.authentication.ldap.username
     private String username;
     //user.authentication.ldap.password
@@ -79,22 +77,6 @@ public class AuthenticationConfiguration {
 
     public void setUserSearchBase(String userSearchBase) {
       this.userSearchBase = userSearchBase;
-    }
-
-    public String getGroupSearchBase() {
-      return groupSearchBase;
-    }
-
-    public void setGroupSearchBase(String groupSearchBase) {
-      this.groupSearchBase = groupSearchBase;
-    }
-
-    public String getGroupSearchFilter() {
-      return groupSearchFilter;
-    }
-
-    public void setGroupSearchFilter(String groupSearchFilter) {
-      this.groupSearchFilter = groupSearchFilter;
     }
 
     public String getUrl() {
@@ -143,6 +125,14 @@ public class AuthenticationConfiguration {
 
     public void setPasswordAttribute(String passwordAttribute) {
       this.passwordAttribute = passwordAttribute;
+    }
+
+    public Integer getPort() {
+      return port;
+    }
+
+    public void setPort(Integer port) {
+      this.port = port;
     }
   }
 }

@@ -9,6 +9,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   Optional<User> findByName(String name);
 
+  Optional<User> findByMail(String mail);
+
   Integer countBySpacesContains(Space space);
 
   List<User> findAllBySpacesContains(Space space);

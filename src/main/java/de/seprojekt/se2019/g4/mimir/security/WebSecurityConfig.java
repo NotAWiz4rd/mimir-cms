@@ -5,15 +5,13 @@ import static de.seprojekt.se2019.g4.mimir.security.AuthenticationConfiguration.
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.ldap.LdapAuthenticationProviderConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * This class will configure the security and ldap security aspect of the application
@@ -81,21 +79,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .managerPassword(ldapConfig.getPassword());
   }
 
-  @Bean
-  public PasswordEncoder noOpPasswordEncoder() {
-    return new PasswordEncoder() {
-      @Override
-      public String encode(CharSequence rawPassword) {
-        return rawPassword.toString();
-      }
-
-      @Override
-      public boolean matches(CharSequence rawPassword, String encodedPassword) {
-        return rawPassword.toString().equals(encodedPassword);
-      }
-    };
-  }
-
   /**
    * Do the LDAP configuration for authenticating against a local created LDAP server which loads
    * its data from a local LDIF (LDAP Data Interchange Format) file.
@@ -105,16 +88,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     configureLdap(auth)
         .ldif(ldapConfig.getLdif())
         .root(ldapConfig.getRoot())
+        .port(ldapConfig.getPort())
         .and()
         .passwordCompare()
-        /*
-         * Spring reads the password from ldap_schema.ldif,
-         * base 64 decodes it
-         * and compares the value using the noop encoder
-         */
-        .passwordEncoder(this.noOpPasswordEncoder())
+        .passwordEncoder(new BCryptPasswordEncoder())
         .passwordAttribute(ldapConfig.getPasswordAttribute());
-
   }
 
   /**
@@ -126,8 +104,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     return auth.ldapAuthentication()
         .userSearchFilter(ldapConfig.getUserSearchFilter())
         .userSearchBase(ldapConfig.getUserSearchBase())
-        .groupSearchBase(ldapConfig.getGroupSearchBase())
-        .groupSearchFilter(ldapConfig.getGroupSearchFilter())
         .contextSource();
   }
 }

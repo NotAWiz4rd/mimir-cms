@@ -5,13 +5,18 @@ import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactService;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
 import de.seprojekt.se2019.g4.mimir.content.space.Space;
+import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
 import de.seprojekt.se2019.g4.mimir.security.JwtPrincipal;
+import de.seprojekt.se2019.g4.mimir.security.LdapClient;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,21 +28,50 @@ public class UserService {
   private UserRepository userRepository;
   private FolderService folderService;
   private ArtifactService artifactService;
+  private SpaceService spaceService;
+  private LdapClient ldapClient;
+
+  @Value("${app.validMailDomain}")
+  private String validMailDomain;
 
   public UserService(UserRepository userRepository, @Lazy FolderService folderService,
-      @Lazy ArtifactService artifactService) {
+      @Lazy ArtifactService artifactService, @Lazy SpaceService spaceService,
+      LdapClient ldapClient) {
     this.userRepository = userRepository;
     this.folderService = folderService;
     this.artifactService = artifactService;
+    this.spaceService = spaceService;
+    this.ldapClient = ldapClient;
   }
 
   @Transactional
-  public User create(String name, String mail) {
+  public User create(String mail, String password) {
+    mail = mail.toLowerCase();
+
+    if (!this.isValidEmailAddress(mail) ||
+        this.findByMail(mail).isPresent()) {
+      return null;
+    }
+
+    String username = mail
+        .split("@")[0]
+        .replace(".", "");
+
+    if (this.findByName(username).isPresent()) {
+      return null;
+    }
+
+    LOGGER.info("Creating new user in LDAP: " + username);
     User user = new User();
-    user.setName(name);
+    user.setName(username);
     user.setMail(mail);
     user.setSpaces(new ArrayList<>());
-    return userRepository.save(user);
+    user = userRepository.save(user);
+
+    spaceService.create(username, new JwtPrincipal(username));
+    ldapClient.registerLdapUser(username, password);
+
+    return user;
   }
 
   /**
@@ -53,6 +87,14 @@ public class UserService {
   public Optional<User> findById(long userId) {
     return this.userRepository.findById(userId);
   }
+
+  /**
+   * Return user with given mail
+   */
+  public Optional<User> findByMail(String mail) {
+    return this.userRepository.findByMail(mail.toLowerCase());
+  }
+
 
   /**
    * Update a user
@@ -175,6 +217,23 @@ public class UserService {
     } else {
       return this.isAuthorizedForSpace(artifact.getSpace(), principal);
     }
+  }
+
+  /**
+   * https://stackoverflow.com/questions/624581/
+   */
+  public boolean isValidEmailAddress(String email) {
+    String ePattern = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$";
+    Pattern p = java.util.regex.Pattern.compile(ePattern);
+    Matcher m = p.matcher(email);
+    return m.matches();
+  }
+
+  /**
+   * checks if mail address is from a valid domain
+   */
+  public boolean isValidEmailDomain(String email) {
+    return email.endsWith("@" + this.validMailDomain);
   }
 
 }
