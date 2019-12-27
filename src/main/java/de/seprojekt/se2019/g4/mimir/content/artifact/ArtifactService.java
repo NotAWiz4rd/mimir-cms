@@ -109,21 +109,28 @@ public class ArtifactService {
   }
 
   /**
-   * Create a new artifact with a file.
+   * Create
    */
   @Transactional
-  public Artifact upload(String displayName, MultipartFile file, Folder parentFolder)
-      throws IOException {
+  public Artifact create(String displayName, MultipartFile file, Folder parentFolder) throws IOException {
     Artifact artifact = new Artifact();
     artifact.setName(displayName);
     artifact.setParentFolder(parentFolder);
     artifact.setCreationDate(Instant.now());
+    return this.upload(artifact, file);
+  }
 
+  /**
+   * Create a new artifact with a file.
+   */
+  @Transactional
+  public Artifact upload(Artifact artifact, MultipartFile file)
+      throws IOException {
     // update metadata of artifact
     MediaType contentType = MediaType.valueOf(file.getContentType());
     artifact.setContentType(contentType);
     artifact
-        .setSpace(spaceService.findByRootFolder(folderService.getRootFolder(parentFolder)).get());
+        .setSpace(spaceService.findByRootFolder(folderService.getRootFolder(artifact.getParentFolder())).get());
 
     // save artifact binary data
     try (InputStream inputStream = file.getInputStream()) {

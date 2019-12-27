@@ -161,14 +161,16 @@ public class ArtifactController {
   public ResponseEntity<Artifact> uploadArtifact(@RequestParam("parentId") Long parentFolderId,
       @RequestParam("name") String name, @RequestParam("file") MultipartFile file,
       Principal principal) throws IOException {
-    Optional<Folder> parentFolder = folderService.findById(parentFolderId);
-    if (parentFolder.isEmpty()) {
+    Optional<Folder> parentFolderOptional = folderService.findById(parentFolderId);
+    if (parentFolderOptional.isEmpty()) {
       return ResponseEntity.status(409).build();
     }
-    if (!userService.isAuthorizedForFolder(parentFolder.get(), principal)) {
+
+    Folder parentFolder = parentFolderOptional.get();
+    if (!userService.isAuthorizedForFolder(parentFolder, principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
-    if (artifactService.existsByParentFolderAndDisplayName(parentFolder.get(), name)) {
+    if (artifactService.existsByParentFolderAndDisplayName(parentFolder, name)) {
       return ResponseEntity.status(409).build();
     }
     if (StringUtils.isEmpty(name)) {
@@ -177,28 +179,45 @@ public class ArtifactController {
     if (file == null || file.getContentType() == null || file.isEmpty()) {
       return ResponseEntity.badRequest().build();
     }
-    return ResponseEntity.ok().body(artifactService.upload(name, file, parentFolder.get()));
+    return ResponseEntity.ok().body(artifactService.create(name, file, parentFolder));
   }
 
   /**
-   * The user can rename an artifact by calling this interface
+   * The user can update an artifact by calling this interface
    */
   @PutMapping(value = "/artifact/{id}")
-  public ResponseEntity<Artifact> renameArtifact(@PathVariable long id,
-      @RequestParam("name") String name, Principal principal) {
+  public ResponseEntity<Artifact> update(
+      @PathVariable long id,
+      @RequestParam(name = "name", required = false) String name,
+      @RequestParam(name = "file", required = false) MultipartFile file,
+      Principal principal) throws IOException {
     Optional<Artifact> artifactOptional = artifactService.findById(id);
     if (artifactOptional.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
-    if (!userService.isAuthorizedForArtifact(artifactOptional.get(), principal)) {
+
+    Artifact artifact = artifactOptional.get();
+    if (!userService.isAuthorizedForArtifact(artifact, principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
-    if (StringUtils.isEmpty(name)) {
-      return ResponseEntity.badRequest().build();
+
+    if (name != null) {
+      if (name == "") {
+        return ResponseEntity.badRequest().build();
+      }
+      artifact.setName(name);
+      artifact = artifactService.update(artifact);
     }
-    Artifact artifact = artifactOptional.get();
-    artifact.setName(name);
-    return ResponseEntity.ok().body(artifactService.update(artifact));
+
+    if (file != null) {
+      if (file.getContentType() == null || file.isEmpty()) {
+        return ResponseEntity.badRequest().build();
+      }
+
+      artifact = artifactService.upload(artifact, file);
+    }
+
+    return ResponseEntity.ok().body(artifact);
   }
 
   /**
