@@ -70,7 +70,7 @@ public class ExampleDataGenerator implements CommandLineRunner {
       throws IOException {
     MultipartFile multipartFile = new ExampleMultipartFile(name, mediaType,
         new ClassPathResource(systemPath));
-    artifactService.upload(name, multipartFile, parentFolder);
+    artifactService.create(name, multipartFile, parentFolder);
     LOGGER.info("Added artifact '{}'", name);
   }
 }
