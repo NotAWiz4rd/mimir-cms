@@ -7,6 +7,8 @@ Entwicklung
 Rest-Schnittstelle:
 
     /login?username=...&password=... -> GET liefert JWT für User
+    
+    /user -> GET liefert aktuellen User basierend auf JWT
 
     /spaces -> GET liefert alle Spaces
     /space/{id} -> GET liefert Space nach Frontend Muster
