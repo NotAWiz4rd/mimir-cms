@@ -69,7 +69,7 @@ public class FolderController {
    */
   @GetMapping(value = "/folder/share/{id}")
   public ResponseEntity<String> getShareToken(@PathVariable long id,
-      @RequestParam(name = "expiration", required = false) Integer expirationMs,
+      @RequestParam(name = "expiration", required = false) Long expirationMs,
       Principal principal)
       throws JsonProcessingException {
     Optional<Folder> folder = folderService.findById(id);
