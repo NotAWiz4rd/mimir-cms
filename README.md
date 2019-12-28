@@ -8,7 +8,6 @@ Rest-Schnittstelle:
 
     /login?username=...&password=... -> GET liefert JWT für User
 
-    /spaces -> GET liefert alle Spaces
     /space/{id} -> GET liefert Space nach Frontend Muster
     /space/{id}?force -> DELETE löscht Space und gesamten Inhalt
     /space/?name -> POST erstellt einen neuen Space

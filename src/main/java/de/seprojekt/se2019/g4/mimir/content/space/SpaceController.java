@@ -1,7 +1,6 @@
 package de.seprojekt.se2019.g4.mimir.content.space;
 
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
-import de.seprojekt.se2019.g4.mimir.security.JwtPrincipal;
 import de.seprojekt.se2019.g4.mimir.security.user.User;
 import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import java.security.Principal;
@@ -38,18 +37,6 @@ public class SpaceController {
     this.spaceService = spaceService;
     this.folderService = folderService;
     this.userService = userService;
-  }
-
-  /**
-   * The user can get a list of all existing spaces using this interface. Endpoint usage is not
-   * allowed for share tokens.
-   */
-  @GetMapping(value = "/spaces")
-  public ResponseEntity<List<Space>> getSpaces(Principal principal) {
-    if (JwtPrincipal.fromPrincipal(principal).isAnonymous()) {
-      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-    }
-    return ResponseEntity.ok().body(userService.findByName(principal.getName()).get().getSpaces());
   }
 
   /**
