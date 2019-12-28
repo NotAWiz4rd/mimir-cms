@@ -38,7 +38,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     http
         .authorizeRequests()
-        .antMatchers(HttpMethod.POST, "/register")
+        .antMatchers(HttpMethod.POST, "/register/mail")
+        .permitAll()
+        .antMatchers(HttpMethod.POST, "/register/confirm")
         .permitAll()
         .and()
         .authorizeRequests()
