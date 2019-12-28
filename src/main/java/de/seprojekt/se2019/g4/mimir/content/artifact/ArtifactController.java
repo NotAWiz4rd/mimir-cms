@@ -74,7 +74,7 @@ public class ArtifactController {
    */
   @GetMapping(value = "/artifact/share/{id}")
   public ResponseEntity<String> getShareToken(@PathVariable long id,
-      @RequestParam(name = "expiration", required = false) Integer expirationMs,
+      @RequestParam(name = "expiration", required = false) Long expirationMs,
       Principal principal)
       throws JsonProcessingException {
     Optional<Artifact> artifact = artifactService.findById(id);
