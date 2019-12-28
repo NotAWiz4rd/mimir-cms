@@ -17,7 +17,7 @@ public class MailService {
   public void sendRegistrationMail(String to, String link, Date expiration) {
     String text =
           "Thank you for becoming a member!\n\n"
-        + "Open the following link to complete your registration: " + link + "\n"
+        + "Open the following link to complete your registration: " + link + "\n\n"
         + "(The link expires at " + expiration + ")";
 
     SimpleMailMessage message = new SimpleMailMessage();

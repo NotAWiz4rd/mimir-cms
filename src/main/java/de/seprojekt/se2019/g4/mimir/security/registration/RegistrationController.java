@@ -25,7 +25,8 @@ public class RegistrationController {
   @Value("${app.frontendRegistrationUrl}")
   private String frontendRegistrationUrl;
 
-  public RegistrationController(MailService mailService, UserService userService, JwtTokenProvider jwtTokenProvider) {
+  public RegistrationController(MailService mailService, UserService userService,
+      JwtTokenProvider jwtTokenProvider) {
     this.mailService = mailService;
     this.userService = userService;
     this.jwtTokenProvider = jwtTokenProvider;
@@ -84,6 +85,12 @@ public class RegistrationController {
 
     if (StringUtils.isEmpty(mail)) {
       return ResponseEntity.badRequest().build();
+    }
+
+    Optional<User> user = userService.findByMail(mail);
+
+    if (user.isPresent()) {
+      return ResponseEntity.status(409).build();
     }
 
     userService.create(mail, password);
