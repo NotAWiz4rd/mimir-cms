@@ -2,12 +2,10 @@ package de.seprojekt.se2019.g4.mimir.content.comment;
 
 import de.seprojekt.se2019.g4.mimir.content.artifact.ArtifactRepository;
 import de.seprojekt.se2019.g4.mimir.security.user.UserService;
-import java.io.IOException;
 import java.security.Principal;
 import java.time.Instant;
 import java.util.Collection;
 import javax.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,12 +21,16 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("comments")
 public class CommentController {
 
-  @Autowired
-  private ArtifactRepository artifactRepository;
-  @Autowired
-  private CommentRepository commentRepository;
-  @Autowired
-  private UserService userService;
+  private final ArtifactRepository artifactRepository;
+  private final CommentRepository commentRepository;
+  private final UserService userService;
+
+  public CommentController(ArtifactRepository artifactRepository,
+      CommentRepository commentRepository, UserService userService) {
+    this.artifactRepository = artifactRepository;
+    this.commentRepository = commentRepository;
+    this.userService = userService;
+  }
 
   @PostMapping
   public Comment create(Principal principal, @Valid @RequestBody CreateCommentDto comment) {
@@ -46,7 +48,8 @@ public class CommentController {
   }
 
   @GetMapping
-  public Collection<Comment> list(Principal principal, @RequestParam("artifactId") Long artifactId) {
+  public Collection<Comment> list(Principal principal,
+      @RequestParam("artifactId") Long artifactId) {
     return artifactRepository.findById(artifactId)
         .map(artifact -> {
           if (!userService.isAuthorizedForArtifact(artifact, principal)) {
