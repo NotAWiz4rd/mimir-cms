@@ -27,7 +27,7 @@ RUN mvn dependency:go-offline
 #  Kopiere den Quelltext in den Container
 COPY ./src /usr/src/mimir/src
 #  Erzeuge mittels maven eine JAR-Datei
-RUN mvn package
+RUN mvn package -DskipTests
 #  Verschiebe den von Maven erzeugten Ordner aus dem Quelltext-Ordner
 RUN mv /usr/src/mimir/target /opt/mimir && \
     chown -R mimir:mimir /opt/mimir

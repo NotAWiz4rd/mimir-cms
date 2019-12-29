@@ -1,5 +1,18 @@
 version: "3"
 services:
+  nginx:
+    image: seproject/mimir-frontend:1.0.0
+    container_name: mimir-frontend
+    build:
+     context: ./frontend/
+    ports:
+      - "80:80"
+    networks:
+      intern:
+        ipv4_address: 172.16.239.10
+      DMZ:
+        ipv4_address: 172.16.238.10
+
   mimir:
     image: seproject/mimir:1.0.0
     container_name: mimir
@@ -8,14 +21,87 @@ services:
       args:
         MIMIR_VERSION: 1.0.0
     ports:
-      - "80:8080"
+      - "8080:8080"
+    networks:
+      intern:
+        ipv4_address: 172.16.239.11
     environment:
       - SERVER_PORT=8080
+      - USER_AUTHENTICATION_LDAP_USERSEARCHFILTER=(uid={0})
+      - USER_AUTHENTICATION_LDAP_USERSEARCHBASE=ou=accounts,ou=users,dc=seprojekt,dc=de
+      - USER_AUTHENTICATION_LDAP_GROUPSEARCHFILTER=member={0}
+      - USER_AUTHENTICATION_LDAP_GROUPSEARCHBASE=ou=groups,ou=users,dc=seprojekt,dc=de
+      - USER_AUTHENTICATION_LDAP_URL=ldap://172.16.239.12
+      - USER_AUTHENTICATION_LDAP_USERNAME=uid=cms,ou=service-users,dc=seprojekt,dc=de
+      - USER_AUTHENTICATION_LDAP_PASSWORD=cms
+      - SPRING_DATASOURCE_URL=jdbc:mysql://172.16.239.13/cms?useUnicode=yes&characterEncoding=UTF-8
+      - SPRING_DATASOURCE_USERNAME=cms
+      - SPRING_DATASOURCE_PASSWORD=cms
+    volumes:
+      - ./container_volumes/mimir/data:/srv/mimir
+
+  openldap:
+    image: osixia/openldap
+    container_name: openldap
+    ports:
+      - "389:389"
+    networks:
+      intern:
+        ipv4_address: 172.16.239.12
+    environment:
+      - LDAP_ORGANISATION=SEProjekt Test Organisation
+      - LDAP_DOMAIN=seprojekt.de
+      - LDAP_BASE_DN=dc=seprojekt,dc=de
+      - LDAP_ADMIN_PASSWORD=admin
+      - LDAP_CONFIG_PASSWORD=config
+      - LDAP_READONLY_USER=false
+      - LDAP_RFC2307BIS_SCHEMA=false
+      - LDAP_BACKEND=mdb
+      - LDAP_TLS=false
+      - LDAP_REPLICATION=false
+      - KEEP_EXISTING_CONFIG=false
+      - LDAP_REMOVE_CONFIG_AFTER_SETUP=true
+    volumes:
+      - ./container_volumes/openldap/data:/var/lib/ldap
+      - ./container_volumes/openldap/config:/etc/ldap/slapd.d
+
+  mariadb:
+    image: mariadb
+    container_name: mariadb
+    ports:
+      - "3306:3306"
+    networks:
+      intern:
+        ipv4_address: 172.16.239.13
+    environment:
+      - MYSQL_ROOT_PASSWORD=mariadb
+      - MYSQL_DATABASE=cms
+      - MYSQL_USER=cms
+      - MYSQL_PASSWORD=cms
+    volumes:
+      - ./container_volumes/mariadb/data:/var/lib/mysql
+
   mail:
     image: namshi/smtp
     container_name: smtp-mimir
     restart: always
     expose:
      - "25"
+    networks:
+      intern:
+        ipv4_address: 172.16.239.14
     environment:
      - MAILNAME=owa.sonia.de
+
+networks:
+  DMZ:
+    internal: false
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.238.0/24
+  intern:
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.16.239.0/24
