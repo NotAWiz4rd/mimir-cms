@@ -86,6 +86,8 @@ services:
       - MYSQL_DATABASE=cms
       - MYSQL_USER=cms
       - MYSQL_PASSWORD=cms
+      # https://github.com/docker-library/mariadb/issues/262
+      - MYSQL_INITDB_SKIP_TZINFO=1
     volumes:
       - ./container_volumes/mariadb/data:/var/lib/mysql
 
