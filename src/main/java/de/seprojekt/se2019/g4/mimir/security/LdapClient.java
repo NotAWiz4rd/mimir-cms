@@ -30,7 +30,7 @@ public class LdapClient {
    */
   public void registerLdapUser(final String username, final String password) {
     LdapContextSource ldapContextSource = new LdapContextSource();
-    ldapContextSource.setUrl(ldap.getUrl() + ldap.getPort() + "/" + ldap.getRoot());
+    ldapContextSource.setUrl(ldap.getUrl() + ":" + ldap.getPort() + "/" + ldap.getRoot());
     ldapContextSource.setAnonymousReadOnly(true);
     ldapContextSource.afterPropertiesSet();
 
