@@ -21,9 +21,9 @@ public class MailService {
         + "(The link expires at " + expiration + ")";
 
     SimpleMailMessage message = new SimpleMailMessage();
-    message.setFrom("mimir-cms@ostfalia.de");
+    message.setFrom("cmsplusplus@ostfalia.de");
     message.setTo(to);
-    message.setSubject("Mimir-CMS Registration");
+    message.setSubject("CMS++ Registration");
     message.setText(text);
     this.javaMailSender.send(message);
   }
