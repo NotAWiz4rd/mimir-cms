@@ -2,6 +2,7 @@ package de.seprojekt.se2019.g4.mimir.security;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.seprojekt.se2019.g4.mimir.security.user.User;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -69,7 +70,7 @@ public class JwtTokenProvider {
   public String generateRegistrationToken(String mail) {
     Map<String, Object> claims = new HashMap<>();
     claims.put("sub", mail);
-    claims.put("type", "R");
+    claims.put("type", User.REGISTRATION_IDENTIFIER);
 
     return this.generateShareTokenWithClaims(claims, jwtRegistrationExpirationMs);
   }
