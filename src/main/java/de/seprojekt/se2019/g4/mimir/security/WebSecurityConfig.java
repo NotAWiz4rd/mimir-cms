@@ -92,8 +92,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     Ldap ldapConfig = config.getLdap();
     configureLdap(auth)
         .ldif(ldapConfig.getLdif())
-        .managerDn(ldapConfig.getUsername())
-        .managerPassword(ldapConfig.getPassword())
         .root(ldapConfig.getRoot())
         .port(ldapConfig.getPort())
         .and()
