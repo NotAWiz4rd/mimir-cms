@@ -2,4 +2,3 @@ dn: ou=users,dc=seprojekt,dc=de
 ou: users
 objectClass: organizationalUnit
 objectClass: top
-structuralObjectClass: organizationalUnit

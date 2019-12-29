@@ -79,7 +79,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   private void configureLdapFromServer(AuthenticationManagerBuilder auth) throws Exception {
     Ldap ldapConfig = config.getLdap();
     configureLdap(auth)
-        .url(ldapConfig.getUrl())
+        .url(ldapConfig.getUrl() + ":" + ldapConfig.getPort() + "/" + ldapConfig.getRoot())
         .managerDn(ldapConfig.getUsername())
         .managerPassword(ldapConfig.getPassword());
   }
@@ -92,6 +92,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     Ldap ldapConfig = config.getLdap();
     configureLdap(auth)
         .ldif(ldapConfig.getLdif())
+        .managerDn(ldapConfig.getUsername())
+        .managerPassword(ldapConfig.getPassword())
         .root(ldapConfig.getRoot())
         .port(ldapConfig.getPort())
         .and()
