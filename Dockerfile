@@ -5,9 +5,6 @@ ARG MIMIR_VERSION=1.0.0
 ENV ENV_MIMIR_VERSION=$MIMIR_VERSION
 #  Verwende einen LDAP Server als Backend zur Benutzer Authentifizierung
 ENV USER_AUTHENTICATION_METHOD=ldap_server
-#  Definiere den Speicherpfad für die Artefakte von Mimir
-#  gemäß https://github.com/paulcwarren/spring-content/issues/11
-ENV SPRING_CONTENT_FS_FILESYSTEM_ROOT=/srv/mimir
 #  Datenbank Initialisierung
 ENV SPRING_JPA_HIBERNATE_DDL_AUTO=update
 

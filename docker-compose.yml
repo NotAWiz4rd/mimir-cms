@@ -21,6 +21,8 @@ services:
       - openldap
       - mariadb
       - mail
+    ports:
+      - "8080:8080"
     environment:
       - SERVER_PORT=8080
       - USER_AUTHENTICATION_LDAP_USERSEARCHFILTER=(uid={0})
@@ -30,18 +32,15 @@ services:
       - USER_AUTHENTICATION_LDAP_USERNAME=cn=admin,dc=seprojekt,dc=de
       - USER_AUTHENTICATION_LDAP_PASSWORD=cmsadmin
       - USER_AUTHENTICATION_LDAP_ROOT=dc=seprojekt,dc=de
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
       - SPRING_DATASOURCE_URL=jdbc:mysql://mariadb/cms?useUnicode=yes&characterEncoding=UTF-8
       - SPRING_DATASOURCE_USERNAME=cms
       - SPRING_DATASOURCE_PASSWORD=cms
-    volumes:
-      - ./container_volumes/mimir/data:/srv/mimir
 
   openldap:
     image: osixia/openldap
     container_name: openldap
-    command: -l debug --copy-service
-    ports:
-      - "389:389"
+    command: --copy-service
     environment:
       - LDAP_ORGANISATION=SEProjekt Test Organisation
       - LDAP_DOMAIN=seprojekt.de
