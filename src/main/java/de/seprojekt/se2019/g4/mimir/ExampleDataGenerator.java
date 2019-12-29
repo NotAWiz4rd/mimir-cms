@@ -47,6 +47,11 @@ public class ExampleDataGenerator implements CommandLineRunner {
    */
   @Override
   public void run(String... args) throws Exception {
+    if (userService.findByMail("t.hellmann@ostfalia.de").isPresent()) {
+        LOGGER.info("Database is not empty, skipping example data generator");
+	return;
+    }
+
     userService.create("t.hellmann@ostfalia.de","thellmann");
     User user2 = userService.create("jo.bark@ostfalia.de","jobark");
 
