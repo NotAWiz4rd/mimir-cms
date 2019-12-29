@@ -7,6 +7,8 @@ services:
      context: ./frontend/
     ports:
       - "80:80"
+    depends_on:
+      - mimir
     networks:
       intern:
         ipv4_address: 172.16.239.10
@@ -22,6 +24,10 @@ services:
         MIMIR_VERSION: 1.0.0
     ports:
       - "8080:8080"
+    depends_on:
+      - openldap
+      - mariadb
+      - mail
     networks:
       intern:
         ipv4_address: 172.16.239.11
