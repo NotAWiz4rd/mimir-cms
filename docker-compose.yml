@@ -49,6 +49,7 @@ services:
   openldap:
     image: osixia/openldap
     container_name: openldap
+    command: --copy-service
     ports:
       - "389:389"
     networks:
@@ -70,6 +71,7 @@ services:
     volumes:
       - ./container_volumes/openldap/data:/var/lib/ldap
       - ./container_volumes/openldap/config:/etc/ldap/slapd.d
+      - ./src/main/resources/ldap_schema.ldif:/container/services/slapd/assets/config/bootstrap/ldif/50-mimir.ldif
 
   mariadb:
     image: mariadb
