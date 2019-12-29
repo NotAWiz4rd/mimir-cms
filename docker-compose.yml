@@ -24,13 +24,12 @@ services:
     environment:
       - SERVER_PORT=8080
       - USER_AUTHENTICATION_LDAP_USERSEARCHFILTER=(uid={0})
-      - USER_AUTHENTICATION_LDAP_USERSEARCHBASE=ou=accounts,ou=users,dc=seprojekt,dc=de
-      - USER_AUTHENTICATION_LDAP_GROUPSEARCHFILTER=member={0}
-      - USER_AUTHENTICATION_LDAP_GROUPSEARCHBASE=ou=groups,ou=users,dc=seprojekt,dc=de
+      - USER_AUTHENTICATION_LDAP_USERSEARCHBASE=ou=users
       - USER_AUTHENTICATION_LDAP_URL=ldap://openldap
       - USER_AUTHENTICATION_LDAP_PORT=389
-      - USER_AUTHENTICATION_LDAP_USERNAME=uid=cms,ou=service-users,dc=seprojekt,dc=de
-      - USER_AUTHENTICATION_LDAP_PASSWORD=cms
+      - USER_AUTHENTICATION_LDAP_USERNAME=cn=admin,dc=seprojekt,dc=de
+      - USER_AUTHENTICATION_LDAP_PASSWORD=cmsadmin
+      - USER_AUTHENTICATION_LDAP_ROOT=dc=seprojekt,dc=de
       - SPRING_DATASOURCE_URL=jdbc:mysql://mariadb/cms?useUnicode=yes&characterEncoding=UTF-8
       - SPRING_DATASOURCE_USERNAME=cms
       - SPRING_DATASOURCE_PASSWORD=cms
@@ -40,24 +39,19 @@ services:
   openldap:
     image: osixia/openldap
     container_name: openldap
-    command: --copy-service
+    command: -l debug --copy-service
+    ports:
+      - "389:389"
     environment:
       - LDAP_ORGANISATION=SEProjekt Test Organisation
       - LDAP_DOMAIN=seprojekt.de
       - LDAP_BASE_DN=dc=seprojekt,dc=de
-      - LDAP_ADMIN_PASSWORD=admin
-      - LDAP_CONFIG_PASSWORD=config
-      - LDAP_READONLY_USER=false
-      - LDAP_RFC2307BIS_SCHEMA=false
-      - LDAP_BACKEND=mdb
+      - LDAP_ADMIN_PASSWORD=cmsadmin
       - LDAP_TLS=false
-      - LDAP_REPLICATION=false
-      - KEEP_EXISTING_CONFIG=false
-      - LDAP_REMOVE_CONFIG_AFTER_SETUP=true
     volumes:
       - ./container_volumes/openldap/data:/var/lib/ldap
       - ./container_volumes/openldap/config:/etc/ldap/slapd.d
-      - ./src/main/resources/ldap_schema.ldif:/container/services/slapd/assets/config/bootstrap/ldif/50-mimir.ldif
+      - ./src/main/resources/ldap_schema.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/cms.ldif
 
   mariadb:
     image: mariadb
