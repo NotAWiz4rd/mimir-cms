@@ -18,8 +18,8 @@ services:
       args:
         MIMIR_VERSION: 1.0.0
     depends_on:
-      - openldap
       - mariadb
+      - openldap
       - mail
     environment:
       - SERVER_PORT=8080
