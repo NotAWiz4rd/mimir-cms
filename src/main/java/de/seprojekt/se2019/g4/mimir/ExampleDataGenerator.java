@@ -59,7 +59,7 @@ public class ExampleDataGenerator implements CommandLineRunner {
     userService.addUserToSpace(user2, sharedSpace);
 
     Folder sharedRoot = folderService.findByParentFolderAndDisplayName(null, "shared").get();
-    Folder task = folderService.create(sharedRoot, "Aufgabe");
+    Folder task = folderService.create(sharedRoot, "Aufgabe 📬");
 
     uploadFile(sharedRoot, "Innenhof.jpg", MediaType.IMAGE_JPEG, "example_data/innenhof.jpg");
     uploadFile(task, "SE-Projekt Aufgabe.html", MediaType.TEXT_HTML,

@@ -21,8 +21,6 @@ services:
       - openldap
       - mariadb
       - mail
-    ports:
-      - "8080:8080"
     environment:
       - SERVER_PORT=8080
       - USER_AUTHENTICATION_LDAP_USERSEARCHFILTER=(uid={0})
@@ -54,6 +52,8 @@ services:
   mariadb:
     image: mariadb
     container_name: mariadb
+    restart: always
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
       - MYSQL_ROOT_PASSWORD=mariadb
       - MYSQL_DATABASE=cms

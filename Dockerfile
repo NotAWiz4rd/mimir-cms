@@ -24,15 +24,13 @@ RUN mvn dependency:go-offline
 #  Kopiere den Quelltext in den Container
 COPY ./src /usr/src/mimir/src
 #  Erzeuge mittels maven eine JAR-Datei
-RUN mvn package -DskipTests
+RUN mvn package -DskipTests -Dmaven.javadoc.skip=true
 #  Verschiebe den von Maven erzeugten Ordner aus dem Quelltext-Ordner
 RUN mv /usr/src/mimir/target /opt/mimir && \
     chown -R mimir:mimir /opt/mimir
 #  Wechsle in den verschobenen Ordner
 WORKDIR /opt/mimir
 
-#  Gib Port 80 aus dem Container frei
-EXPOSE 80
 #  Wechsle zu Mimir Benutzer
 USER mimir
 #  Starte den Java Server
