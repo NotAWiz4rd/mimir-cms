@@ -9,10 +9,15 @@ Rest-Schnittstelle:
     /login?username=...&password=... -> GET liefert JWT für User
     
     /user -> GET liefert aktuellen User basierend auf JWT
-
+    /register/mail -> POST sendet E-Mail an angefragt Adresse
+    /register/confirm -> POST erstellt neuen User in LDAP und DB
+    
     /spaces -> GET liefert alle Spaces
     /space/{id} -> GET liefert Space nach Frontend Muster
+    /space/{id}/users -> GET liefert User des Spaces
+    /space/{id} -> PUT fügt übergebenen User dem Space hinzu
     /space/{id}?force -> DELETE löscht Space und gesamten Inhalt
+    /space/{id}/removeuser -> DELETE entfernt übergebenen User vom Space
     /space/?name -> POST erstellt einen neuen Space
     
     /folder -> POST erstellt neuen Folder
@@ -41,9 +46,14 @@ Rest-Schnittstelle:
 Docker Deployment
 ---
 ### Starten
+(Das Frontend muss sich im `frontend` Ordner befinden.)
+
 `docker-compose up` oder `docker-compose up -d`
 ### Stoppen
 `docker-compose down`
 ### Logs
 - `docker-compose logs mimir`
+- `docker-compose logs nginx`
+- `docker-compose logs openldap`
+- `docker-compose logs mariadb`
 - `docker-compose logs mail`
