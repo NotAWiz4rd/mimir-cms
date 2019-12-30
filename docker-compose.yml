@@ -23,6 +23,7 @@ services:
       - mail
     environment:
       - SERVER_PORT=8080
+      - APP_FRONTENDREGISTRATIONURL=http://10.235.1.51/register/confirm
       - USER_AUTHENTICATION_LDAP_USERSEARCHFILTER=(uid={0})
       - USER_AUTHENTICATION_LDAP_USERSEARCHBASE=ou=users
       - USER_AUTHENTICATION_LDAP_URL=ldap://openldap
