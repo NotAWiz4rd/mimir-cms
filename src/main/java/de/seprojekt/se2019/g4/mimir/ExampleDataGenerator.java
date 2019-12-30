@@ -48,12 +48,12 @@ public class ExampleDataGenerator implements CommandLineRunner {
   @Override
   public void run(String... args) throws Exception {
     if (userService.findByMail("t.hellmann@ostfalia.de").isPresent()) {
-        LOGGER.info("Database is not empty, skipping example data generator");
-	return;
+      LOGGER.info("Database is not empty, skipping example data generator");
+      return;
     }
 
-    userService.create("t.hellmann@ostfalia.de","thellmann");
-    User user2 = userService.create("jo.bark@ostfalia.de","jobark");
+    userService.create("t.hellmann@ostfalia.de", "thellmann");
+    User user2 = userService.create("jo.bark@ostfalia.de", "jobark");
 
     Space sharedSpace = spaceService.create("shared", new JwtPrincipal("thellmann"));
     userService.addUserToSpace(user2, sharedSpace);
@@ -76,6 +76,5 @@ public class ExampleDataGenerator implements CommandLineRunner {
     MultipartFile multipartFile = new ExampleMultipartFile(name, mediaType,
         new ClassPathResource(systemPath));
     artifactService.create(name, multipartFile, parentFolder);
-    LOGGER.info("Added artifact '{}'", name);
   }
 }

@@ -15,7 +15,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.config.web.server.ServerHttpSecurity.OAuth2ResourceServerSpec.JwtSpec;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.ldap.userdetails.LdapUserDetails;
 import org.springframework.stereotype.Component;

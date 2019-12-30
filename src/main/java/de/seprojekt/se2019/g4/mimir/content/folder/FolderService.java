@@ -54,13 +54,6 @@ public class FolderService {
   }
 
   /**
-   * Return list of folder with given parent folder
-   */
-  public List<Folder> findByParentFolder(Folder parentFolder) {
-    return folderRepository.findByParentFolder(parentFolder);
-  }
-
-  /**
    * Create a new folder in the given parent folder with a given name
    */
   @Transactional
@@ -73,6 +66,8 @@ public class FolderService {
     } else {
       folder.setSpace(this.spaceService.findByRootFolder(this.getRootFolder(parentFolder)).get());
     }
+
+    LOGGER.info("Saving folder '{}'", folder.getName());
     return folderRepository.save(folder);
   }
 
@@ -210,6 +205,8 @@ public class FolderService {
       artifactService.delete(artifactService.update(artifact));
     }
     folder.setSpace(null);
+
+    LOGGER.info("Deleting folder '{}'", folder.getName());
     folderRepository.delete(this.update(folder));
   }
 
@@ -224,6 +221,9 @@ public class FolderService {
     }
   }
 
+  /**
+   * Checks if folder is a child of an other folder
+   */
   public boolean matchesOrIsChild(Folder sharedFolder, Folder requestedFolder) {
     if (requestedFolder.getId() == sharedFolder.getId()) {
       return true;
