@@ -7,8 +7,6 @@ import java.io.InputStream;
 import java.security.Principal;
 import java.util.Optional;
 import javax.persistence.EntityNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
@@ -25,7 +23,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class ThumbnailController {
 
-  private final static Logger LOGGER = LoggerFactory.getLogger(ThumbnailController.class);
   private IconDiscoverService iconDiscoverService;
   private ArtifactService artifactService;
   private UserService userService;

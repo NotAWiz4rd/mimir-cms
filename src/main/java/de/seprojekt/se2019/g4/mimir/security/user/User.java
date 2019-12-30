@@ -1,6 +1,5 @@
 package de.seprojekt.se2019.g4.mimir.security.user;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.seprojekt.se2019.g4.mimir.content.space.Space;
 import java.util.List;
 import java.util.Objects;

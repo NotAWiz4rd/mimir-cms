@@ -25,6 +25,9 @@ public class RegistrationController {
   @Value("${app.frontendRegistrationUrl}")
   private String frontendRegistrationUrl;
 
+  /**
+   * The parameters will be autowired by Spring.
+   */
   public RegistrationController(MailService mailService, UserService userService,
       JwtTokenProvider jwtTokenProvider) {
     this.mailService = mailService;

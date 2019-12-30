@@ -2,7 +2,6 @@ package de.seprojekt.se2019.g4.mimir.content.artifact;
 
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -15,8 +14,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ArtifactRepository extends JpaRepository<Artifact, Long> {
 
   List<Artifact> findByParentFolder(Folder parentFolder);
-
-  Optional<Artifact> findByParentFolderAndName(Folder parentFolder, String name);
 
   boolean existsByParentFolderAndName(Folder parentFolder, String name);
 

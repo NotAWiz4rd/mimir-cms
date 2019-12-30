@@ -34,6 +34,9 @@ public class UserService {
   @Value("${app.validMailDomain}")
   private String validMailDomain;
 
+  /**
+   * The parameters will be autowired by Spring.
+   */
   public UserService(UserRepository userRepository, @Lazy FolderService folderService,
       @Lazy ArtifactService artifactService, @Lazy SpaceService spaceService,
       LdapClient ldapClient) {
@@ -61,7 +64,7 @@ public class UserService {
       return null;
     }
 
-    LOGGER.info("Creating new user in LDAP: " + username);
+    LOGGER.info("Creating user '{}' in DB", username);
     User user = new User();
     user.setName(username);
     user.setMail(mail);
@@ -69,6 +72,8 @@ public class UserService {
     user = userRepository.save(user);
 
     spaceService.create(username, new JwtPrincipal(username));
+
+    LOGGER.info("Creating user '{}' in LDAP", username);
     ldapClient.registerLdapUser(username, password);
 
     return user;
@@ -94,7 +99,6 @@ public class UserService {
   public Optional<User> findByMail(String mail) {
     return this.userRepository.findByMail(mail.toLowerCase());
   }
-
 
   /**
    * Update a user
@@ -142,6 +146,7 @@ public class UserService {
     user = this.findByName(user.getName()).get();
     List<Space> spaceList = user.getSpaces();
     if (!spaceList.contains(space)) {
+      LOGGER.info("Adding user '{}' to space '{}'", user.getName(), space.getName());
       spaceList.add(space);
     }
     return this.update(user);
@@ -154,13 +159,20 @@ public class UserService {
   public boolean isAuthorizedForSpace(Space space, Principal principal) {
     JwtPrincipal jwtPrincipal = JwtPrincipal.fromPrincipal(principal);
     if (jwtPrincipal.isAnonymous()) {
+      LOGGER.warn("Anonymous user tried accessing the space '{}'", space.getName());
       return false; // spaces can't be shared
     }
     Optional<User> optionalUser = this.findByName(principal.getName());
     if (optionalUser.isEmpty()) {
       return false;
     }
-    return optionalUser.get().getSpaces().contains(space);
+    if (optionalUser.get().getSpaces().contains(space)) {
+      return true;
+    } else {
+      LOGGER.warn("User '{}' tried accessing the space '{}'", optionalUser.get().getName(),
+          space.getName());
+      return false;
+    }
   }
 
   /**
@@ -172,13 +184,23 @@ public class UserService {
     if (jwtPrincipal.isAnonymous()) {
       switch (jwtPrincipal.getSharedEntityType()) {
         case Artifact.TYPE_IDENTIFIER:
+          LOGGER.warn(
+              "Anonymous user tried accessing the folder '{}' with a share token for an artifact",
+              folder.getName());
           return false;
         case Folder.TYPE_IDENTIFIER: {
           Optional<Folder> sharedFolder = folderService.findById(jwtPrincipal.getSharedEntityId());
           if (sharedFolder.isEmpty()) {
             return false;
           }
-          return folderService.matchesOrIsChild(sharedFolder.get(), folder);
+          if (folderService.matchesOrIsChild(sharedFolder.get(), folder)) {
+            return true;
+          } else {
+            LOGGER.warn(
+                "Anonymous user tried accessing the folder '{}' with a share token for the folder '{}",
+                folder.getName(), sharedFolder.get().getName());
+            return false;
+          }
         }
         default:
           return false;
@@ -202,14 +224,28 @@ public class UserService {
           if (sharedArtifact.isEmpty()) {
             return false;
           }
-          return sharedArtifact.get().getId() == artifact.getId();
+          if (sharedArtifact.get().getId() == artifact.getId()) {
+            return true;
+          } else {
+            LOGGER.warn(
+                "Anonymous user tried accessing the artifact '{}' with a share token for the artifact '{}",
+                artifact.getName(), sharedArtifact.get().getName());
+            return false;
+          }
         }
         case Folder.TYPE_IDENTIFIER: {
           Optional<Folder> sharedFolder = folderService.findById(jwtPrincipal.getSharedEntityId());
           if (sharedFolder.isEmpty()) {
             return false;
           }
-          return folderService.matchesOrIsChild(sharedFolder.get(), artifact.getParentFolder());
+          if (folderService.matchesOrIsChild(sharedFolder.get(), artifact.getParentFolder())) {
+            return true;
+          } else {
+            LOGGER.warn(
+                "Anonymous user tried accessing the artifact '{}' with a share token for the folder '{}",
+                artifact.getName(), sharedFolder.get().getName());
+            return false;
+          }
         }
         default:
           return false;
