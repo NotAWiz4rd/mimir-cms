@@ -17,7 +17,7 @@ public class MailService {
     this.javaMailSender = javaMailSender;
   }
 
-  public void sendRegistrationMail(String to, String link, Date expiration) {
+  public Boolean sendRegistrationMail(String to, String link, Date expiration) {
     LOGGER.info("Sending registration mail to '{}' which expires at '{}'", to, expiration);
 
     String text =
@@ -30,6 +30,13 @@ public class MailService {
     message.setTo(to);
     message.setSubject("CMS++ Registration");
     message.setText(text);
-    this.javaMailSender.send(message);
+
+    try {
+      this.javaMailSender.send(message);
+      return true;
+    } catch (Exception e) {
+      LOGGER.error("Failure: E-Mail to '{}' could not been sent", to);
+      return false;
+    }
   }
 }
