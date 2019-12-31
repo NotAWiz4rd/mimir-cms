@@ -61,9 +61,15 @@ public class RegistrationController {
 
     String token = jwtTokenProvider.generateRegistrationToken(mail);
     String link = this.frontendRegistrationUrl + "?mail=" + mail + "&token=" + token;
-    mailService.sendRegistrationMail(mail, link, jwtTokenProvider.getExpiration(token));
 
-    return ResponseEntity.ok().build();
+    boolean successful = mailService
+        .sendRegistrationMail(mail, link, jwtTokenProvider.getExpiration(token));
+
+    if (successful) {
+      return ResponseEntity.ok().build();
+    } else {
+      return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+    }
   }
 
   /**
