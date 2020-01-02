@@ -7,12 +7,9 @@ Entwicklung
 Rest-Schnittstelle:
 
     /login?username=...&password=... -> GET liefert JWT für User
-    
     /user -> GET liefert aktuellen User basierend auf JWT
     /register/mail -> POST sendet E-Mail an angefragt Adresse
     /register/confirm -> POST erstellt neuen User in LDAP und DB
-    
-    /spaces -> GET liefert alle Spaces
     /space/{id} -> GET liefert Space nach Frontend Muster
     /space/{id}/users -> GET liefert User des Spaces
     /space/{id} -> PUT fügt übergebenen User dem Space hinzu
