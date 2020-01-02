@@ -15,6 +15,8 @@ import javax.validation.constraints.NotNull;
 @Entity
 public class User {
 
+  public static final String REGISTRATION_IDENTIFIER = "R";
+
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;

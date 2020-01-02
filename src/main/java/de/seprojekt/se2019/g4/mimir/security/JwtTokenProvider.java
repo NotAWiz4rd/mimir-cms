@@ -2,6 +2,7 @@ package de.seprojekt.se2019.g4.mimir.security;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.seprojekt.se2019.g4.mimir.security.user.User;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -27,10 +28,13 @@ public class JwtTokenProvider {
   private String jwtSecret;
 
   @Value("${app.jwtExpirationMs}")
-  private int jwtExpirationMs;
+  private Long jwtExpirationMs;
 
   @Value("${app.jwtDownloadExpirationMs}")
-  private int jwtDownloadExpirationMs;
+  private Long jwtDownloadExpirationMs;
+
+  @Value("${app.jwtRegistrationExpirationMs}")
+  private Long jwtRegistrationExpirationMs;
 
   public String generateToken(Authentication auth) {
     var user = ((LdapUserDetails) auth.getPrincipal());
@@ -47,7 +51,7 @@ public class JwtTokenProvider {
   }
 
   public String generateShareToken(Long sharedEntityId, String sharedEntityType,
-      Integer expirationMs)
+      Long expirationMs)
       throws JsonProcessingException {
     Map<String, Object> claims = new HashMap<>();
     claims.put("sub", JwtPrincipal.shareLinkUserName);
@@ -62,7 +66,15 @@ public class JwtTokenProvider {
     return om.writeValueAsString(map);
   }
 
-  private String generateShareTokenWithClaims(Map<String, Object> claims, Integer expirationMs) {
+  public String generateRegistrationToken(String mail) {
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("sub", mail);
+    claims.put("type", User.REGISTRATION_IDENTIFIER);
+
+    return this.generateShareTokenWithClaims(claims, jwtRegistrationExpirationMs);
+  }
+
+  private String generateShareTokenWithClaims(Map<String, Object> claims, Long expirationMs) {
     if (expirationMs == null) {
       expirationMs = jwtExpirationMs;
     }
@@ -104,6 +116,14 @@ public class JwtTokenProvider {
         .parseClaimsJws(token)
         .getBody()
         .get(key);
+  }
+
+  public Date getExpiration(String token) {
+    return Jwts.parser()
+        .setSigningKey(key())
+        .parseClaimsJws(token)
+        .getBody()
+        .getExpiration();
   }
 
 }

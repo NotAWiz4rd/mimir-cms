@@ -12,9 +12,6 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.tika.config.TikaConfig;
-import org.apache.tika.mime.MimeTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -30,9 +27,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class ArtifactService {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(ArtifactService.class);
-  private static long ONE_KB = 1000;
-  private static long ONE_MB = ONE_KB * ONE_KB;
-  private static long ONE_GB = ONE_KB * ONE_MB;
 
   private ArtifactRepository artifactRepository;
   private ThumbnailGenerator thumbnailGenerator;
@@ -112,7 +106,8 @@ public class ArtifactService {
    * Create
    */
   @Transactional
-  public Artifact create(String displayName, MultipartFile file, Folder parentFolder) throws IOException {
+  public Artifact create(String displayName, MultipartFile file, Folder parentFolder)
+      throws IOException {
     Artifact artifact = new Artifact();
     artifact.setName(displayName);
     artifact.setParentFolder(parentFolder);
@@ -126,11 +121,15 @@ public class ArtifactService {
   @Transactional
   public Artifact upload(Artifact artifact, MultipartFile file)
       throws IOException {
+    LOGGER.info("Saving artifact '{}'", artifact.getName());
+
     // update metadata of artifact
     MediaType contentType = MediaType.valueOf(file.getContentType());
     artifact.setContentType(contentType);
     artifact
-        .setSpace(spaceService.findByRootFolder(folderService.getRootFolder(artifact.getParentFolder())).get());
+        .setSpace(
+            spaceService.findByRootFolder(folderService.getRootFolder(artifact.getParentFolder()))
+                .get());
 
     // save artifact binary data
     try (InputStream inputStream = file.getInputStream()) {
@@ -162,45 +161,9 @@ public class ArtifactService {
    */
   @Transactional
   public void delete(Artifact artifact) {
+    LOGGER.info("Deleting artifact '{}'", artifact.getName());
     thumbnailRepository.delete(artifact.getThumbnail());
     artifactRepository.delete(artifact);
-  }
-
-  public String byteCountToDisplaySize(Artifact artifact) {
-    String displaySize;
-    long size = artifact.getContentLength();
-    if (size / ONE_GB > 0) {
-      displaySize = size / ONE_GB + " GB";
-    } else if (size / ONE_MB > 0) {
-      displaySize = size / ONE_MB + " MB";
-    } else if (size / ONE_KB > 0) {
-      displaySize = size / ONE_KB + " KB";
-    } else {
-      displaySize = size + " bytes";
-    }
-    return displaySize;
-  }
-
-  /**
-   * If the name does not have a file extension, then try to calculate the file extension from its
-   * content type.
-   */
-  public String calculateFileName(Artifact artifact) {
-    String displayName = artifact.getName();
-    if (!FilenameUtils.getExtension(displayName).isEmpty()) {
-      return displayName;
-    }
-
-    String mimeType = artifact.getContentType().toString();
-    try {
-      String extension = TikaConfig.getDefaultConfig().getMimeRepository().forName(mimeType)
-          .getExtension();
-      return FilenameUtils.getBaseName(displayName) + extension;
-    } catch (MimeTypeException e) {
-      LOGGER.error("cant find mimetype", e);
-      // its not possible, simply return the name
-      return displayName;
-    }
   }
 
 }

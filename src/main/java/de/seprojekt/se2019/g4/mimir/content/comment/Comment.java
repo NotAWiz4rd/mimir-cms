@@ -1,8 +1,13 @@
 package de.seprojekt.se2019.g4.mimir.content.comment;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import de.seprojekt.se2019.g4.mimir.content.artifact.Artifact;
+import de.seprojekt.se2019.g4.mimir.security.user.User;
 import java.time.Instant;
 import java.util.Objects;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -12,116 +17,108 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
-import de.seprojekt.se2019.g4.mimir.content.artifact.Artifact;
-import de.seprojekt.se2019.g4.mimir.security.user.User;
-
 @Entity
 public class Comment {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
 
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-    @JsonIdentityReference(alwaysAsId = true)
-    @JsonProperty("artifactId")
-    @JoinColumn
-    @ManyToOne
-    private Artifact artifact;
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private Long id;
 
-    @Column
-    @Lob
-    private String text;
+  @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+  @JsonIdentityReference(alwaysAsId = true)
+  @JsonProperty("artifactId")
+  @JoinColumn
+  @ManyToOne
+  private Artifact artifact;
 
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-    @JsonIdentityReference(alwaysAsId = true)
-    @JsonProperty("authorId")
-    @JoinColumn
-    @ManyToOne
-    private User author;
+  @Column
+  @Lob
+  private String text;
 
-    @Column
-    private Instant creationDate;
+  @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+  @JsonIdentityReference(alwaysAsId = true)
+  @JsonProperty("authorId")
+  @JoinColumn
+  @ManyToOne
+  private User author;
 
-    public Comment() {
-    }
+  @Column
+  private Instant creationDate;
 
-    public Comment(Artifact artifact, String text, User author, Instant creationDate) {
-      this.artifact = artifact;
-      this.text = text;
-      this.author = author;
-      this.creationDate = creationDate;
-    }
+  public Comment() {
+  }
 
-    @JsonProperty("author")
-    public String getAuthorName() {
-        return this.getAuthor().getName();
-    }
+  public Comment(Artifact artifact, String text, User author, Instant creationDate) {
+    this.artifact = artifact;
+    this.text = text;
+    this.author = author;
+    this.creationDate = creationDate;
+  }
 
-    public Long getId() {
-        return id;
-    }
+  @JsonProperty("author")
+  public String getAuthorName() {
+    return this.getAuthor().getName();
+  }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+  public Long getId() {
+    return id;
+  }
 
-    public Artifact getArtifact() {
-        return artifact;
-    }
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-    public void setArtifact(Artifact artifact) {
-        this.artifact = artifact;
-    }
+  public Artifact getArtifact() {
+    return artifact;
+  }
 
-    public String getText() {
-        return text;
-    }
+  public void setArtifact(Artifact artifact) {
+    this.artifact = artifact;
+  }
 
-    public void setText(String text) {
-        this.text = text;
-    }
+  public String getText() {
+    return text;
+  }
 
-    public User getAuthor() {
-        return author;
-    }
+  public void setText(String text) {
+    this.text = text;
+  }
 
-    public void setAuthor(User author) {
-        this.author = author;
-    }
+  public User getAuthor() {
+    return author;
+  }
 
-    public Instant getCreationDate() {
-        return creationDate;
-    }
+  public void setAuthor(User author) {
+    this.author = author;
+  }
 
-    public void setCreationDate(Instant creationDate) {
-        this.creationDate = creationDate;
-    }
+  public Instant getCreationDate() {
+    return creationDate;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        return Objects.equals(this, o);
-    }
+  public void setCreationDate(Instant creationDate) {
+    this.creationDate = creationDate;
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, artifact, text, author, creationDate);
-    }
+  @Override
+  public boolean equals(Object o) {
+    return Objects.equals(this, o);
+  }
 
-    @Override
-    public String toString() {
-        return "Comment{" +
-                "id=" + id +
-                ", artifact=" + artifact +
-                ", text='" + text + '\'' +
-                ", author='" + author + '\'' +
-                ", creationDate=" + creationDate +
-                '}';
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, artifact, text, author, creationDate);
+  }
 
+  @Override
+  public String toString() {
+    return "Comment{" +
+        "id=" + id +
+        ", artifact=" + artifact +
+        ", text='" + text + '\'' +
+        ", author='" + author + '\'' +
+        ", creationDate=" + creationDate +
+        '}';
+  }
 
 }

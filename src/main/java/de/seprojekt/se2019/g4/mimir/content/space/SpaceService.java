@@ -61,6 +61,8 @@ public class SpaceService {
    */
   @Transactional
   public Space create(String name, Principal principal) {
+    LOGGER.info("Creating space '{}'", name);
+
     Folder rootFolder = folderService.create(null, name);
 
     Space space = new Space();
@@ -84,6 +86,8 @@ public class SpaceService {
    */
   @Transactional
   public void delete(Space space) {
+    LOGGER.info("Deleting space '{}'", space.getName());
+
     Folder rootFolder = space.getRootFolder();
     space.setRootFolder(null);
     space = this.update(space);

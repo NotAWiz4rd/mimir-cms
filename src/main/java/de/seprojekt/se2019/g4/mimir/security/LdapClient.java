@@ -3,6 +3,7 @@ package de.seprojekt.se2019.g4.mimir.security;
 import de.seprojekt.se2019.g4.mimir.security.AuthenticationConfiguration.Ldap;
 import java.nio.charset.Charset;
 import javax.naming.Name;
+import org.springframework.ldap.core.AuthenticationSource;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
@@ -24,14 +25,28 @@ public class LdapClient {
 
   /**
    * registers user in ldap server
-   *
-   * @param username
-   * @param password
    */
   public void registerLdapUser(final String username, final String password) {
     LdapContextSource ldapContextSource = new LdapContextSource();
-    ldapContextSource.setUrl(ldap.getUrl() + ldap.getPort() + "/" + ldap.getRoot());
-    ldapContextSource.setAnonymousReadOnly(true);
+    ldapContextSource.setUrl(ldap.getUrl() + ":" + ldap.getPort() + "/" + ldap.getRoot());
+
+    if (ldap.getPassword() != null && ldap.getUsername() != null) {
+      AuthenticationSource authenticationSource = new AuthenticationSource() {
+        @Override
+        public String getPrincipal() {
+          return ldap.getUsername();
+        }
+
+        @Override
+        public String getCredentials() {
+          return ldap.getPassword();
+        }
+      };
+      ldapContextSource.setAuthenticationSource(authenticationSource);
+    } else {
+      ldapContextSource.setAnonymousReadOnly(true);
+    }
+
     ldapContextSource.afterPropertiesSet();
 
     LdapTemplate ldapTemplate = new LdapTemplate(ldapContextSource);

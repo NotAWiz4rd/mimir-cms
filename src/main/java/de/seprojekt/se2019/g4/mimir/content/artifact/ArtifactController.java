@@ -74,7 +74,7 @@ public class ArtifactController {
    */
   @GetMapping(value = "/artifact/share/{id}")
   public ResponseEntity<String> getShareToken(@PathVariable long id,
-      @RequestParam(name = "expiration", required = false) Integer expirationMs,
+      @RequestParam(name = "expiration", required = false) Long expirationMs,
       Principal principal)
       throws JsonProcessingException {
     Optional<Artifact> artifact = artifactService.findById(id);
@@ -84,6 +84,9 @@ public class ArtifactController {
     if (!userService.isAuthorizedForSpace(artifact.get().getSpace(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
+    LOGGER.info("Generating share token for artifact '{}'", artifact.get().getName());
+
     return ResponseEntity.ok().body(jwtTokenProvider
         .generateShareToken(artifact.get().getId(), Artifact.TYPE_IDENTIFIER, expirationMs));
   }
@@ -101,6 +104,9 @@ public class ArtifactController {
     if (!userService.isAuthorizedForArtifact(artifact.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
+    LOGGER.info("Generating download token for artifact '{}'", artifact.get().getName());
+
     return ResponseEntity.ok().body(jwtTokenProvider
         .generateDownloadToken(artifact.get().getId(), Artifact.TYPE_IDENTIFIER));
   }
@@ -109,7 +115,8 @@ public class ArtifactController {
    * Generate a download of an artifact when a user visit this url
    */
   @GetMapping(value = "/artifact/{id}/download")
-  public ResponseEntity<InputStreamResource> downloadArtifact(@PathVariable long id, Principal principal) {
+  public ResponseEntity<InputStreamResource> downloadArtifact(@PathVariable long id,
+      Principal principal) {
     Optional<Artifact> artifact = artifactService.findById(id);
     if (artifact.isEmpty()) {
       ResponseEntity.notFound().build();
@@ -118,6 +125,8 @@ public class ArtifactController {
     if (!userService.isAuthorizedForArtifact(artifact.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
+    LOGGER.info("Download of artifact '{}'", artifact.get().getName());
 
     HttpHeaders headers = new HttpHeaders();
     headers.set("Content-Disposition",
@@ -146,6 +155,9 @@ public class ArtifactController {
     if (!userService.isAuthorizedForArtifact(artifact, principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
+    LOGGER.info("Download of raw artifact '{}'", artifact.getName());
+
     InputStream inputStream = artifactService.findArtifactContent(artifact);
     InputStreamResource content = new InputStreamResource(inputStream);
     return ResponseEntity.ok()
@@ -179,6 +191,9 @@ public class ArtifactController {
     if (file == null || file.getContentType() == null || file.isEmpty()) {
       return ResponseEntity.badRequest().build();
     }
+
+    LOGGER.info("Upload of artifact '{}'", name);
+
     return ResponseEntity.ok().body(artifactService.create(name, file, parentFolder));
   }
 
@@ -205,6 +220,8 @@ public class ArtifactController {
       if (name == "") {
         return ResponseEntity.badRequest().build();
       }
+      LOGGER.info("Renaming of artifact from '{}' to '{}'", artifact.getName(), name);
+
       artifact.setName(name);
       artifact = artifactService.update(artifact);
     }
@@ -213,6 +230,7 @@ public class ArtifactController {
       if (file.getContentType() == null || file.isEmpty()) {
         return ResponseEntity.badRequest().build();
       }
+      LOGGER.info("Content update of artifact '{}'", artifact.getName());
 
       artifact = artifactService.upload(artifact, file);
     }
@@ -232,6 +250,7 @@ public class ArtifactController {
     if (!userService.isAuthorizedForArtifact(artifact.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
     artifactService.delete(artifact.get());
     return ResponseEntity.ok().build();
   }

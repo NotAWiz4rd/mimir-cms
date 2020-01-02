@@ -83,6 +83,7 @@ public class SpaceController {
     if (!userService.isAuthorizedForSpace(space.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
     userService.addUserToSpace(user.get(), space.get());
     return ResponseEntity.ok().build();
   }
@@ -121,6 +122,9 @@ public class SpaceController {
     if (!userService.isAuthorizedForSpace(space.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
+    LOGGER.info("Removing user '{}' from space '{}'", user.get().getName(), space.get().getName());
+
     User realUser = user.get();
     realUser.getSpaces().remove(space.get());
     userService.update(realUser);

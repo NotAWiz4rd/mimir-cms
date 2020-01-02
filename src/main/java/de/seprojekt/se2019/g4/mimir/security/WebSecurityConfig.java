@@ -38,7 +38,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     http
         .authorizeRequests()
-        .antMatchers(HttpMethod.POST, "/register")
+        .antMatchers(HttpMethod.POST, "/register/mail")
+        .permitAll()
+        .antMatchers(HttpMethod.POST, "/register/confirm")
         .permitAll()
         .and()
         .authorizeRequests()
@@ -79,9 +81,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   private void configureLdapFromServer(AuthenticationManagerBuilder auth) throws Exception {
     Ldap ldapConfig = config.getLdap();
     configureLdap(auth)
-        .url(ldapConfig.getUrl())
+        .url(ldapConfig.getUrl() + ":" + ldapConfig.getPort() + "/" + ldapConfig.getRoot())
         .managerDn(ldapConfig.getUsername())
-        .managerPassword(ldapConfig.getPassword());
+        .managerPassword(ldapConfig.getPassword())
+        .and()
+        .passwordCompare()
+        .passwordEncoder(new BCryptPasswordEncoder())
+        .passwordAttribute(ldapConfig.getPasswordAttribute());
   }
 
   /**

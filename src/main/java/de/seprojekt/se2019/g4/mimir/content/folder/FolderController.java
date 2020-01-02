@@ -69,7 +69,7 @@ public class FolderController {
    */
   @GetMapping(value = "/folder/share/{id}")
   public ResponseEntity<String> getShareToken(@PathVariable long id,
-      @RequestParam(name = "expiration", required = false) Integer expirationMs,
+      @RequestParam(name = "expiration", required = false) Long expirationMs,
       Principal principal)
       throws JsonProcessingException {
     Optional<Folder> folder = folderService.findById(id);
@@ -79,6 +79,9 @@ public class FolderController {
     if (!userService.isAuthorizedForSpace(folder.get().getSpace(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
+    LOGGER.info("Generating share token for folder '{}'", folder.get().getName());
+
     return ResponseEntity.ok().body(jwtTokenProvider
         .generateShareToken(folder.get().getId(), Folder.TYPE_IDENTIFIER, expirationMs));
   }
@@ -96,12 +99,15 @@ public class FolderController {
     if (!userService.isAuthorizedForFolder(folder.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
+    LOGGER.info("Generating download token for folder '{}'", folder.get().getName());
+
     return ResponseEntity.ok().body(jwtTokenProvider
         .generateDownloadToken(folder.get().getId(), Folder.TYPE_IDENTIFIER));
   }
 
   /**
-   * Generated a download of a folder as a ZIP file
+   * Generates a download of a folder as a ZIP file
    */
   @GetMapping(value = "/folder/{id}/download")
   public ResponseEntity<InputStreamResource> downloadFolder(@PathVariable long id,
@@ -115,6 +121,8 @@ public class FolderController {
     if (!userService.isAuthorizedForFolder(folder.get(), principal)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
+    LOGGER.info("Download of folder '{}'", folder.get().getName());
 
     HttpHeaders headers = new HttpHeaders();
     headers.set("Content-Disposition",
@@ -168,6 +176,9 @@ public class FolderController {
     if (StringUtils.isEmpty(name)) {
       return ResponseEntity.badRequest().build();
     }
+
+    LOGGER.info("Renaming of folder from '{}' to '{}'", folderOptional.get().getName(), name);
+
     Folder folder = folderOptional.get();
     folder.setName(name);
     folder = folderService.update(folder);

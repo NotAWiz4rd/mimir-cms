@@ -38,7 +38,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
   private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
     String token;
 
-    if(request.getRequestURI().matches("/(artifact|folder)/[\\d]+/download")) {
+    if (request.getRequestURI().matches("/(artifact|folder)/[\\d]+/download")) {
       token = request.getParameter("token");
 
       if (token == null) {
