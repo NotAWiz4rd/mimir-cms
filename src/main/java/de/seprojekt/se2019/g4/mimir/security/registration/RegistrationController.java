@@ -60,7 +60,7 @@ public class RegistrationController {
     }
 
     String token = jwtTokenProvider.generateRegistrationToken(mail);
-    String link = this.frontendRegistrationUrl + "?mail=" + mail + "&token=" + token;
+    String link = this.frontendRegistrationUrl + ";mail=" + mail + ";token=" + token;
 
     boolean successful = mailService
         .sendRegistrationMail(mail, link, jwtTokenProvider.getExpiration(token));
