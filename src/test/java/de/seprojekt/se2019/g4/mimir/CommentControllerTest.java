@@ -68,7 +68,7 @@ public class CommentControllerTest {
     assertNotNull("should exist", comment);
     assertEquals("should have right id", artifact.getId(), comment.getArtifact().getId());
     assertEquals("should have right author", user, comment.getAuthor());
-    assertEquals("should have right author", text, comment.getText());
+    assertEquals("should have right text", text, comment.getText());
 
     assertTrue("should list comment",
         commentController.list(auth, artifact.getId()).contains(comment));
