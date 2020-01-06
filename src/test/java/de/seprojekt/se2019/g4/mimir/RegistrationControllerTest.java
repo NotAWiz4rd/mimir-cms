@@ -44,7 +44,8 @@ public class RegistrationControllerTest {
     assertEquals("should check if mail is from valid domain", 400,
         registrationController.registrationMail("test123@not" + validMailDomain)
             .getStatusCodeValue());
-    assertEquals("should try to send the mail", 503,
+    assertEquals("should try to send the mail and should fail because the mail server is offline",
+        503,
         registrationController.registrationMail("test123@" + validMailDomain).getStatusCodeValue());
   }
 
