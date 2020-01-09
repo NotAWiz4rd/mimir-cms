@@ -9,6 +9,7 @@ import de.seprojekt.se2019.g4.mimir.content.comment.Comment;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.space.Space;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.Thumbnail;
+import de.seprojekt.se2019.g4.mimir.security.user.User;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -50,6 +51,13 @@ public class Artifact {
 
   @Column(length = 512)
   private String name;
+
+  @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "name")
+  @JsonIdentityReference(alwaysAsId = true)
+  @JsonProperty("author")
+  @JoinColumn
+  @ManyToOne
+  private User author;
 
   @Column
   private Instant creationDate;
@@ -159,6 +167,14 @@ public class Artifact {
     this.comments = comments;
   }
 
+  public User getAuthor() {
+    return author;
+  }
+
+  public void setAuthor(User author) {
+    this.author = author;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -176,6 +192,7 @@ public class Artifact {
         Arrays.equals(content, artifact.content) &&
         contentType.equals(artifact.contentType) &&
         thumbnail.equals(artifact.thumbnail) &&
+        author.equals(artifact.author) &&
         Objects.equals(space, artifact.space);
   }
 
@@ -183,7 +200,7 @@ public class Artifact {
   public int hashCode() {
     int result = Objects
         .hash(id, parentFolder, name, creationDate, contentLength, contentType,
-            thumbnail,
+            thumbnail, author,
             space);
     result = 31 * result + Arrays.hashCode(content);
     return result;
@@ -195,6 +212,7 @@ public class Artifact {
         "id=" + id +
         ", parentFolder=" + parentFolder +
         ", name='" + name + '\'' +
+        ", author=" + author +
         ", creationDate=" + creationDate +
         ", contentLength=" + contentLength +
         ", content=" + Arrays.toString(content) +

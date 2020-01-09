@@ -6,6 +6,7 @@ import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.Thumbnail;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.ThumbnailGenerator;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.ThumbnailRepository;
+import de.seprojekt.se2019.g4.mimir.security.user.User;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -106,10 +107,11 @@ public class ArtifactService {
    * Create
    */
   @Transactional
-  public Artifact create(String displayName, MultipartFile file, Folder parentFolder)
+  public Artifact create(String displayName, User author, MultipartFile file, Folder parentFolder)
       throws IOException {
     Artifact artifact = new Artifact();
     artifact.setName(displayName);
+    artifact.setAuthor(author);
     artifact.setParentFolder(parentFolder);
     artifact.setCreationDate(Instant.now());
     return this.upload(artifact, file);

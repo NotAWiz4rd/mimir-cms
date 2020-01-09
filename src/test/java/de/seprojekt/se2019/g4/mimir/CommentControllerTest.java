@@ -52,6 +52,7 @@ public class CommentControllerTest {
     String name = "file1.txt";
     Artifact artifact = artifactService.create(
         name,
+        user,
         new MockMultipartFile(name, name, "text/plain", "foobar".getBytes()),
         space.getRootFolder()
     );
