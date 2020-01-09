@@ -46,11 +46,13 @@ public class ArtifactServiceTest {
     String name = "file1.txt";
     Artifact artifact = artifactService.create(
         name,
+        user,
         new MockMultipartFile(name, name, "text/plain", "foobar".getBytes()),
         space.getRootFolder()
     );
     assertNotNull("should exist", artifact);
     assertEquals("should have name", name, artifact.getName());
+    assertEquals("should have author", user, artifact.getAuthor());
     assertEquals("should have parent folder", space.getRootFolder(), artifact.getParentFolder());
     assertEquals("should have space", space, artifact.getSpace());
     assertEquals("should have content type", MediaType.valueOf("text/plain"), artifact.getContentType());
@@ -61,6 +63,7 @@ public class ArtifactServiceTest {
     String name = "file1.txt";
     Artifact artifact = artifactService.create(
         name,
+        user,
         new MockMultipartFile(name, name, "text/plain", "foobar".getBytes()),
         space.getRootFolder()
     );
