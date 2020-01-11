@@ -1,0 +1,66 @@
+@startuml
+
+frame Deplyoment-CMS++{
+
+    node Client {
+        node Linux/Windows <<OS>> {
+            node Web-Browser <<Service>> {
+
+            }
+        }
+    }
+
+    Client -- Server : HTTP <<protocol>>
+
+    node Server {
+        node Linux <<OS>> {
+           node DockerHost <<Host>> {
+                node seproject/mimir <<Service>> {
+                    node Debian-Buster-Slim <<OS>> {
+                        node Tomcat <<Application-Server>> {
+                            node JVM <<Execution-Environment>> {
+                               artifact "mimir.jar" <<artifact>>
+                            }
+                        }
+                    }
+                }
+                node seproject/mimir-frontend <<Service>> {
+                    node debian-buster-slim <<OS>> {
+                        node nginx <<WebServer>> {
+                            artifact "Mimir-Frontend" <<artifact>>
+                        }
+                    }
+                }
+                node mariadb <<Service>> {
+                    node ubuntu-bionic <<OS>> {
+                        node MariaDB <<Database-System>> {
+                        }
+                    }
+                }
+                node osixia/openldap <<Service>> {
+                    node debian-strech-slim <<OS>> {
+                        node OpenLDAP <<Service>> {
+                        }
+                    }
+                }
+                node namshi/smtp <<Service>> {
+                    node debian:buster <<OS>> {
+                        node Exim-SMTP <<Service>> {
+                        }
+                    }
+                }
+                node LdapData <<Volume>> {
+                }
+                node DbData <<Volume>> {
+                }
+                LdapData -- OpenLDAP
+                DbData -- MariaDB
+           }
+           node DockerCompose <<Service>> {
+                artifact "docker-compose.yml" <<artifact>>
+           }
+           DockerCompose -- DockerHost : <<configure>>
+        }
+    }
+}
+@enduml
