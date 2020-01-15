@@ -107,7 +107,7 @@ public class ArtifactService {
    * Create
    */
   @Transactional
-  public Artifact create(String displayName, User author, MultipartFile file, Folder parentFolder)
+  public Artifact create(String displayName, String author, MultipartFile file, Folder parentFolder)
       throws IOException {
     Artifact artifact = new Artifact();
     artifact.setName(displayName);

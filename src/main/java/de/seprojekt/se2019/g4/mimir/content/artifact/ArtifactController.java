@@ -3,8 +3,8 @@ package de.seprojekt.se2019.g4.mimir.content.artifact;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.folder.FolderService;
+import de.seprojekt.se2019.g4.mimir.security.JwtPrincipal;
 import de.seprojekt.se2019.g4.mimir.security.JwtTokenProvider;
-import de.seprojekt.se2019.g4.mimir.security.user.User;
 import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import java.io.IOException;
 import java.io.InputStream;
@@ -192,14 +192,16 @@ public class ArtifactController {
     if (file == null || file.getContentType() == null || file.isEmpty()) {
       return ResponseEntity.badRequest().build();
     }
-    Optional<User> author = userService.findByName(principal.getName());
-    if (author.isEmpty()) {
-      return ResponseEntity.badRequest().build();
-    }
-
     LOGGER.info("Upload of artifact '{}'", name);
 
-    return ResponseEntity.ok().body(artifactService.create(name, author.get(), file, parentFolder));
+    String author;
+    if (principal.getName().equals(JwtPrincipal.shareLinkUserName)) {
+      author = "Guest";
+    } else {
+      author = principal.getName();
+    }
+
+    return ResponseEntity.ok().body(artifactService.create(name, author, file, parentFolder));
   }
 
   /**

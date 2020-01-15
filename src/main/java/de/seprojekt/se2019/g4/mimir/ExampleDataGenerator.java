@@ -61,18 +61,18 @@ public class ExampleDataGenerator implements CommandLineRunner {
     Folder sharedRoot = folderService.findByParentFolderAndDisplayName(null, "shared").get();
     Folder task = folderService.create(sharedRoot, "Aufgabe 📬");
 
-    uploadFile(user2, sharedRoot, "Innenhof.jpg", MediaType.IMAGE_JPEG,
+    uploadFile(user2.getName(), sharedRoot, "Innenhof.jpg", MediaType.IMAGE_JPEG,
         "example_data/innenhof.jpg");
-    uploadFile(user2, task, "SE-Projekt Aufgabe.html", MediaType.TEXT_HTML,
+    uploadFile(user2.getName(), task, "SE-Projekt Aufgabe.html", MediaType.TEXT_HTML,
         "example_data/aufgabenstellung.html");
-    uploadFile(user2, sharedRoot, "Beispielvideo Final1.mp4", MediaType.valueOf("video/mp4"),
+    uploadFile(user2.getName(), sharedRoot, "Beispielvideo Final1.mp4", MediaType.valueOf("video/mp4"),
         "example_data/SampleVideo_1280x720_5mb.mp4");
   }
 
   /**
    * source: https://stackoverflow.com/a/20572072
    */
-  private void uploadFile(User author, Folder parentFolder, String name, MediaType mediaType,
+  private void uploadFile(String author, Folder parentFolder, String name, MediaType mediaType,
       String systemPath)
       throws IOException {
     MultipartFile multipartFile = new ExampleMultipartFile(name, mediaType,
