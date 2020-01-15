@@ -52,12 +52,16 @@ public class CommentController {
           if (!userService.isAuthorizedForArtifact(artifact, principal)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
           }
-          var user = userService.findByName(principal.getName()).get();
+
+          var user = userService.findByName(principal.getName());
+          if(user.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+          }
 
           LOGGER.info("Saving new comment for '{}'", artifact.getName());
 
           return commentRepository
-              .save(new Comment(artifact, comment.getText(), user, Instant.now()));
+              .save(new Comment(artifact, comment.getText(), user.get(), Instant.now()));
         })
         .orElseThrow(
             () -> new ResponseStatusException(HttpStatus.BAD_REQUEST));

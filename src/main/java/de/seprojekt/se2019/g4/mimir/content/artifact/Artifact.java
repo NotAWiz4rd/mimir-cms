@@ -52,12 +52,9 @@ public class Artifact {
   @Column(length = 512)
   private String name;
 
-  @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "name")
-  @JsonIdentityReference(alwaysAsId = true)
+  @Column
   @JsonProperty("author")
-  @JoinColumn
-  @ManyToOne
-  private User author;
+  private String author;
 
   @Column
   private Instant creationDate;
@@ -167,11 +164,11 @@ public class Artifact {
     this.comments = comments;
   }
 
-  public User getAuthor() {
+  public String getAuthor() {
     return author;
   }
 
-  public void setAuthor(User author) {
+  public void setAuthor(String author) {
     this.author = author;
   }
 

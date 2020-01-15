@@ -64,7 +64,7 @@ public class FolderServiceTest {
         Folder subFolder = folderService.create(folder, subFolderName);
         Artifact artifact =  artifactService.create(
             "file1.txt",
-            user,
+            user.getName(),
             new MockMultipartFile("file1.txt", "file1.txt", "text/plain", "foobar".getBytes()),
             subFolder
         );
@@ -78,7 +78,7 @@ public class FolderServiceTest {
     public void shouldDownloadFolderAsZip() throws Exception {
         artifactService.create(
             "file1.txt",
-            user,
+            user.getName(),
             new MockMultipartFile("file1.txt", "file1.txt", "text/plain", "foobar".getBytes()),
             space.getRootFolder()
         );
