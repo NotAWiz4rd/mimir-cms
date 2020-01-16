@@ -68,7 +68,7 @@ public class ThumbnailController {
     return ResponseEntity.ok()
         .contentType(MediaType.IMAGE_JPEG)
         .contentLength(artifact.getThumbnail().getContentLength())
-        .cacheControl(CacheControl.maxAge(60, TimeUnit.SECONDS).cachePublic())
+        .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES).cachePublic())
         // InputStreamResource will close the InputStream
         .body(new InputStreamResource(thumbnailInputStream));
   }
@@ -81,7 +81,7 @@ public class ThumbnailController {
         .orElseThrow(EntityNotFoundException::new);
     return ResponseEntity.ok()
         .contentType(MediaType.valueOf("image/svg+xml"))
-        .cacheControl(CacheControl.maxAge(60, TimeUnit.SECONDS).cachePublic())
+        .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES).cachePublic())
         .body(resource);
   }
 }
