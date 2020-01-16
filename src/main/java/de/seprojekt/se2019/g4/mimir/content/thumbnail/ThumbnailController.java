@@ -6,9 +6,12 @@ import de.seprojekt.se2019.g4.mimir.security.user.UserService;
 import java.io.InputStream;
 import java.security.Principal;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
 import javax.persistence.EntityNotFoundException;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -65,6 +68,7 @@ public class ThumbnailController {
     return ResponseEntity.ok()
         .contentType(MediaType.IMAGE_JPEG)
         .contentLength(artifact.getThumbnail().getContentLength())
+        .cacheControl(CacheControl.maxAge(60, TimeUnit.SECONDS))
         // InputStreamResource will close the InputStream
         .body(new InputStreamResource(thumbnailInputStream));
   }
