@@ -81,6 +81,7 @@ public class ThumbnailController {
         .orElseThrow(EntityNotFoundException::new);
     return ResponseEntity.ok()
         .contentType(MediaType.valueOf("image/svg+xml"))
+        .cacheControl(CacheControl.maxAge(60, TimeUnit.SECONDS))
         .body(resource);
   }
 }
