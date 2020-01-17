@@ -2,14 +2,14 @@
 
 frame Deplyoment-CMS++{
     
-    cloud ExternalMailServer
+    cloud OstfaliaMailServer
     
     Browser -- nginx : HTTP <<protocol>>
-    nginx -- Tomcat : HTTP <<protocol>>
+    nginx -- Tomcat : HTTP (proxy-pass) <<protocol>>
     Tomcat -- OpenLDAP : LDAP <<protocol>>
     Tomcat -- MariaDB : MySQL <<protocol>>
     Tomcat -- EximSMTP : SMTP <<protocol>>
-    EximSMTP -- ExternalMailServer : SMTP <<protocol>>
+    EximSMTP -- OstfaliaMailServer : SMTP <<protocol>>
     
     node Client {
         node Linux/Windows <<OS>> {
@@ -44,13 +44,13 @@ frame Deplyoment-CMS++{
                         }
                     }
                 }
-                node osixia/openldap <<Service>> {
+                node OsixiaOpenldap <<Service>> {
                     node debian-strech-slim <<OS>> {
                         node OpenLDAP <<Service>> {
                         }
                     }
                 }
-                node namshi/smtp <<Service>> {
+                node NamshiSmtp <<Service>> {
                     node debian:buster <<OS>> {
                         node EximSMTP <<Service>> {
                         }
@@ -60,10 +60,10 @@ frame Deplyoment-CMS++{
                 }
                 node DbData <<Volume>> {
                 }
-                LdapData -- OpenLDAP
-                DbData -- MariaDB
+                LdapData -- OsixiaOpenldap
+                DbData -- mariadb
            }
-           node DockerCompose <<Service>> {
+           node DockerCompose <<Tool>> {
                 artifact "docker-compose.yml" <<artifact>>
            }
            DockerCompose -- DockerHost : <<configure>>
