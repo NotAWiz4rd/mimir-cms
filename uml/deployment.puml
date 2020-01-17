@@ -1,16 +1,23 @@
 @startuml
 
 frame Deplyoment-CMS++{
-
+    
+    cloud ExternalMailServer
+    
+    Browser -- nginx : HTTP <<protocol>>
+    nginx -- Tomcat : HTTP <<protocol>>
+    Tomcat -- OpenLDAP : LDAP <<protocol>>
+    Tomcat -- MariaDB : MySQL <<protocol>>
+    Tomcat -- EximSMTP : SMTP <<protocol>>
+    EximSMTP -- ExternalMailServer : SMTP <<protocol>>
+    
     node Client {
         node Linux/Windows <<OS>> {
-            node Web-Browser <<Service>> {
+            node Browser <<Service>> {
 
             }
         }
     }
-
-    Client -- Server : HTTP <<protocol>>
 
     node Server {
         node Linux <<OS>> {
@@ -45,7 +52,7 @@ frame Deplyoment-CMS++{
                 }
                 node namshi/smtp <<Service>> {
                     node debian:buster <<OS>> {
-                        node Exim-SMTP <<Service>> {
+                        node EximSMTP <<Service>> {
                         }
                     }
                 }
@@ -60,6 +67,7 @@ frame Deplyoment-CMS++{
                 artifact "docker-compose.yml" <<artifact>>
            }
            DockerCompose -- DockerHost : <<configure>>
+          
         }
     }
 }
