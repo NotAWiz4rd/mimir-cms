@@ -65,7 +65,8 @@ public class ExampleDataGenerator implements CommandLineRunner {
         "example_data/innenhof.jpg");
     uploadFile(user2.getName(), task, "SE-Projekt Aufgabe.html", MediaType.TEXT_HTML,
         "example_data/aufgabenstellung.html");
-    uploadFile(user2.getName(), sharedRoot, "Beispielvideo Final1.mp4", MediaType.valueOf("video/mp4"),
+    uploadFile(user2.getName(), sharedRoot, "Beispielvideo Final1.mp4",
+        MediaType.valueOf("video/mp4"),
         "example_data/SampleVideo_1280x720_5mb.mp4");
   }
 

@@ -54,7 +54,7 @@ public class CommentController {
           }
 
           var user = userService.findByName(principal.getName());
-          if(user.isEmpty()) {
+          if (user.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
           }
 

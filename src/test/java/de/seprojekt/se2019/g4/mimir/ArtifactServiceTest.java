@@ -55,7 +55,8 @@ public class ArtifactServiceTest {
     assertEquals("should have author", user.getName(), artifact.getAuthor());
     assertEquals("should have parent folder", space.getRootFolder(), artifact.getParentFolder());
     assertEquals("should have space", space, artifact.getSpace());
-    assertEquals("should have content type", MediaType.valueOf("text/plain"), artifact.getContentType());
+    assertEquals("should have content type", MediaType.valueOf("text/plain"),
+        artifact.getContentType());
   }
 
   @Test

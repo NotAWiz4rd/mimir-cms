@@ -27,68 +27,70 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 @Transactional
 public class FolderServiceTest {
-    @Autowired
-    UserService userService;
 
-    @Autowired
-    FolderService folderService;
+  @Autowired
+  UserService userService;
 
-    @Autowired
-    ArtifactService artifactService;
+  @Autowired
+  FolderService folderService;
 
-    private User user;
-    private Space space;
+  @Autowired
+  ArtifactService artifactService;
 
-    @Before
-    public void init() {
-        user = userService.findByName("thellmann").get();
-        space = user.getSpaces().get(0);
-    }
+  private User user;
+  private Space space;
 
-    @Test
-    public void shouldCreateFolder() {
-        String folderName = "MyTestFolder";
-        Folder folder = folderService.create(space.getRootFolder(), folderName);
-        assertNotNull("should exist", folder);
-        assertTrue("should be empty", folderService.isEmpty(folder));
-        assertEquals("should have name", folderName, folder.getName());
-        assertEquals("should have parent folder", space.getRootFolder(), folder.getParentFolder());
-        assertEquals("should have space", space, folder.getSpace());
-    }
+  @Before
+  public void init() {
+    user = userService.findByName("thellmann").get();
+    space = user.getSpaces().get(0);
+  }
 
-    @Test
-    public void shouldDeleteFolderAndChildren() throws IOException {
-        String folderName = "MyTestFolder";
-        String subFolderName = "MySubFolder";
-        Folder folder = folderService.create(space.getRootFolder(), folderName);
-        Folder subFolder = folderService.create(folder, subFolderName);
-        Artifact artifact =  artifactService.create(
-            "file1.txt",
-            user.getName(),
-            new MockMultipartFile("file1.txt", "file1.txt", "text/plain", "foobar".getBytes()),
-            subFolder
-        );
-        folderService.delete(folder);
-        assertTrue("folder should not exist", folderService.findById(folder.getId()).isEmpty());
-        assertTrue("sub folder should not exist", folderService.findById(subFolder.getId()).isEmpty());
-        assertTrue("artifact should not exist", artifactService.findById(artifact.getId()).isEmpty());
-    }
+  @Test
+  public void shouldCreateFolder() {
+    String folderName = "MyTestFolder";
+    Folder folder = folderService.create(space.getRootFolder(), folderName);
+    assertNotNull("should exist", folder);
+    assertTrue("should be empty", folderService.isEmpty(folder));
+    assertEquals("should have name", folderName, folder.getName());
+    assertEquals("should have parent folder", space.getRootFolder(), folder.getParentFolder());
+    assertEquals("should have space", space, folder.getSpace());
+  }
 
-    @Test
-    public void shouldDownloadFolderAsZip() throws Exception {
-        artifactService.create(
-            "file1.txt",
-            user.getName(),
-            new MockMultipartFile("file1.txt", "file1.txt", "text/plain", "foobar".getBytes()),
-            space.getRootFolder()
-        );
-        var zip = folderService.zip(space.getRootFolder());
-        var in = new ZipInputStream(zip);
-        var folder1 = in.getNextEntry();
-        var file1 = in.getNextEntry();
-        assertTrue("zip sollte folder1 enthalten", folder1.isDirectory());
-        assertEquals("zip sollte file1 enthalten", space.getRootFolder().getName() + "/file1.txt", file1.getName());
-        assertNotEquals("file1 sollte nicht leer sein", 0, file1.getSize());
-    }
+  @Test
+  public void shouldDeleteFolderAndChildren() throws IOException {
+    String folderName = "MyTestFolder";
+    String subFolderName = "MySubFolder";
+    Folder folder = folderService.create(space.getRootFolder(), folderName);
+    Folder subFolder = folderService.create(folder, subFolderName);
+    Artifact artifact = artifactService.create(
+        "file1.txt",
+        user.getName(),
+        new MockMultipartFile("file1.txt", "file1.txt", "text/plain", "foobar".getBytes()),
+        subFolder
+    );
+    folderService.delete(folder);
+    assertTrue("folder should not exist", folderService.findById(folder.getId()).isEmpty());
+    assertTrue("sub folder should not exist", folderService.findById(subFolder.getId()).isEmpty());
+    assertTrue("artifact should not exist", artifactService.findById(artifact.getId()).isEmpty());
+  }
+
+  @Test
+  public void shouldDownloadFolderAsZip() throws Exception {
+    artifactService.create(
+        "file1.txt",
+        user.getName(),
+        new MockMultipartFile("file1.txt", "file1.txt", "text/plain", "foobar".getBytes()),
+        space.getRootFolder()
+    );
+    var zip = folderService.zip(space.getRootFolder());
+    var in = new ZipInputStream(zip);
+    var folder1 = in.getNextEntry();
+    var file1 = in.getNextEntry();
+    assertTrue("zip sollte folder1 enthalten", folder1.isDirectory());
+    assertEquals("zip sollte file1 enthalten", space.getRootFolder().getName() + "/file1.txt",
+        file1.getName());
+    assertNotEquals("file1 sollte nicht leer sein", 0, file1.getSize());
+  }
 
 }
