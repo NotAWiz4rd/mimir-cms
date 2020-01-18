@@ -56,8 +56,10 @@ public class SpaceServiceTest {
     User user = userService.findByName("thellmann").get();
 
     assertTrue("should not exist", spaceService.findById(newSpace.getId()).isEmpty());
-    assertTrue("root folder should not exist", folderService.findById(rootFolder.getId()).isEmpty());
-    assertTrue("child folder should not exist", folderService.findById(testFolder.getId()).isEmpty());
+    assertTrue("root folder should not exist",
+        folderService.findById(rootFolder.getId()).isEmpty());
+    assertTrue("child folder should not exist",
+        folderService.findById(testFolder.getId()).isEmpty());
     assertFalse("user should not be member of space", user.getSpaces().contains(newSpace));
   }
 

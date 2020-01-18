@@ -9,7 +9,6 @@ import de.seprojekt.se2019.g4.mimir.content.comment.Comment;
 import de.seprojekt.se2019.g4.mimir.content.folder.Folder;
 import de.seprojekt.se2019.g4.mimir.content.space.Space;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.Thumbnail;
-import de.seprojekt.se2019.g4.mimir.security.user.User;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;

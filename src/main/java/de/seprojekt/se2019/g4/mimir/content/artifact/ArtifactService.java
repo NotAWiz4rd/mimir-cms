@@ -6,7 +6,6 @@ import de.seprojekt.se2019.g4.mimir.content.space.SpaceService;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.Thumbnail;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.ThumbnailGenerator;
 import de.seprojekt.se2019.g4.mimir.content.thumbnail.ThumbnailRepository;
-import de.seprojekt.se2019.g4.mimir.security.user.User;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;

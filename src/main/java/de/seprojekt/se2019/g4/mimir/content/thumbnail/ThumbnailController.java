@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.security.Principal;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-
 import javax.persistence.EntityNotFoundException;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
