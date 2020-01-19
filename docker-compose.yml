@@ -13,6 +13,7 @@ services:
   mimir:
     image: seproject/mimir:1.0.0
     container_name: mimir
+    restart: always
     build:
       context: ./
       args:
@@ -38,6 +39,7 @@ services:
   openldap:
     image: osixia/openldap
     container_name: openldap
+    restart: always
     command: --copy-service
     environment:
       - LDAP_ORGANISATION=SEProjekt Test Organisation
