@@ -1,6 +1,6 @@
 @startuml
 
-frame Deplyoment-CMS++{
+frame Deployment-CMS++{
     
     cloud OstfaliaMailServer
     
