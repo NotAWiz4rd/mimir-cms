@@ -1,0 +1,44 @@
+@startuml
+
+title MimirCMS
+left to right direction
+
+rectangle Server {
+    database OpenLDAP
+    database MariaDB
+    database FileSystem
+    OpenLDAP -up-() LDAP
+    MariaDB -up-() MySQL
+    FileSystem -up-() File
+    
+    component mimir {
+        [Artifact Service] ---() HTTP
+        [Folder Service] ---() HTTP
+
+        [Thumbnail Service] ---() HTTP
+        
+        [Artifact Store] ---() Artifact
+        [Artifact Store] -( File
+        [Artifact Store] -( MySQL
+        [Artifact Service] -( Artifact
+        
+        [Folder Store] ---() Folder
+        [Folder Store] -( MySQL
+        [Folder Service] -( Folder
+        
+        [Thumbnail Store] ---() Thumbnail
+        [Thumbnail Store] -( File
+        [Thumbnail Store] -( MySQL
+        [Thumbnail Service] -( Thumbnail
+        
+        [Authentication Service] -( LDAP
+        [Authentication Service] ---() HTTP
+        
+    }
+}
+
+rectangle Client {
+    [Frontend] -up--( HTTP
+}
+
+@enduml 
